@@ -7,7 +7,7 @@
 % %
 
 %% load data
-load("../data/cellular/compiled/13122022_25uWRBC.mat");
+load("../../SharingPoint/data/cellular/compiled/17122022_USAF.mat");
 imsize = size(space3D,2) - mod(size(space3D,2),10);
 
 space3D = space3D(:,1:imsize,1:imsize);

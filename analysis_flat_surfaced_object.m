@@ -1,5 +1,7 @@
 %% load data 
-load("../data/cellular/compiled/17122022_USAF.mat");
+close all
+load("../../SharingPoint/data/cellular/compiled/17122022_USAF.mat")
+% load("../data/cellular/compiled/17122022_USAF.mat");
 space3D = space3D(:,1:200,1:200);
 Fs = 5e9;
 
@@ -32,8 +34,6 @@ subplot(3,1,2);imagesc(cmode);axis off;colormap hot
 
 bmode = squeeze(hb(:,99,:));
 subplot(3,1,3);imagesc(bmode);axis off;colormap hot
-
-
 
 %% Collection; get the first C-mode, B-mode and the signal
 numSel = 6;
