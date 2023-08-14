@@ -1,5 +1,6 @@
 %% load data 
 close all
+clear all
 %load("../data/cellular/compiled/11102022_sphere2.mat");
 load("../../SharingPoint/data/cellular/compiled/09102022_sphere.mat")
 imsize = size(space3D,2);
