@@ -1,4 +1,4 @@
-function [rec3d] = waveletfam_denoising(D,paperNum)
+function [rec3d] = paper_denoising(D,paperNum)
 % THIS ARE COLLECTION OF PAPER IMPLEMENTED TECHNIQUE FOR DENOISING
 % re-arrange
 imsize = size(D,2);
@@ -12,7 +12,50 @@ dat2d = reshape(D,1024,imsize^2);
 % I was still skeptical on how they implement this technique properly,
 % there was no proper code being shared nor exact equation.
 
-if(paperNum == "paper-1-wavelet")
+if (paperNum == "paper-1-emd-mi")
+    disp("Run PAPER 1 EMD-MI")
+    denoised = zeros(size(dat2d));
+    parfor sgsel = 1:size(dat2d,2)
+        signal = dat2d(:,sgsel);
+        [imfs,residual] = emd(signal);
+        
+        partition = ceil(size(imfs,2)/2);
+        tail = size(imfs,2);
+        % find the partition by MI
+        cond = true;
+        while cond
+            mi_with_noisy_signal = mi(signal,imfs(:,partition));
+            selected_group = partition+1:tail;
+            mi_with_selected_set = mi(imfs(:,partition),sum(imfs(:,selected_group),2));
+            score = mi_with_noisy_signal - mi_with_selected_set;
+    
+            if(score < 0)% closer to group than noisy
+                partition = partition -1;
+            else
+                cond = false;
+            end
+    
+            if partition == 0
+                cond = false;
+            end
+        end
+        
+    
+        high_f_grp = 1:partition;
+        low_f_grp = partition+1:tail;
+        rec = sum(imfs(:,low_f_grp),2);
+        % apply thresholding to high_f_grp
+        for i =1:numel(high_f_grp)
+            imf_t = imfs(:,high_f_grp(i));
+            rec = rec + wthresh(imf_t,'h',thselect(imf_t,'rigrsure'));
+        end
+        % for the thresholding: https://www.mathworks.com/help/wavelet/ref/thselect.html
+    
+        denoised(:,sgsel) = rec;
+    
+    end
+
+elseif(paperNum == "paper-1-wavelet")
     disp("Run PAPER 1 WAVELET")
     [denoised] = wdenoise(dat2d,wmaxlev(1024,'sym6'),'Wavelet','sym6','DenoisingMethod','SURE');
 

@@ -10,7 +10,9 @@ tcl = tiledlayout(2,1);
 cmode = squeeze(max(hb));
 nexttile();imagesc(cmode');axis off;colormap hot;clim([minHb maxHb])
 
-bmode = squeeze(hb(:,:, 14));
+where_slice = 14; % on USAF
+where_slice = 163; % on 09102022_sphere
+bmode = squeeze(hb(:,:, where_slice));
 nexttile();imagesc(bmode);axis off;colormap hot;clim([minHb maxHb])
 
 cb = colorbar;
