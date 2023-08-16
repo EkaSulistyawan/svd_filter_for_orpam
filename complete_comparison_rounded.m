@@ -14,14 +14,14 @@ bgy = bgy_round;
 
 sg = reshape(space3D(:,sgx,sgy),1024,size(sgx,2)*size(sgy,2));
 bg = reshape(space3D(:,bgx,bgy),1024,size(bgx,2)*size(bgy,2));
-SNRinit = snr(sg,bg);
+SNRinit = snr2d(sg,bg);
 
 % add additive gaussian white noise
 %dataSNR = 40; % in dB, set a stupidly high SNR to make them okay
 space3Dnoised = awgn(space3D,dataSNR);
 sg = reshape(space3Dnoised(:,sgx,sgy),1024,size(sgx,2)*size(sgy,2));
 bg = reshape(space3Dnoised(:,bgx,bgy),1024,size(bgx,2)*size(bgy,2));
-SNRnoised = snr(sg,bg);
+SNRnoised = snr2d(sg,bg);
 
 % change the original value
 space3Dori = space3D;
@@ -123,7 +123,7 @@ function [a] = get_snr(D)
     sg = reshape(D(:,sgx,sgy),1024,size(sgx,2)*size(sgy,2));
     bg = reshape(D(:,bgx,bgy),1024,size(bgx,2)*size(bgy,2));
 
-    a = snr(sg,bg);
+    a = snr2d(sg,bg);
 end
 
 function [a] = get_ssim_cmode(D,ref)
@@ -152,4 +152,13 @@ function [a] = get_psnr_cmode(D,ref)
     cmodeRef = (cmodeRef - min(cmodeRef,[],"all")) / range(cmodeRef,"all");
 
     a = psnr(cmodeD,cmodeRef);
+end
+
+function [outp] = snr2d(a,b)
+    sz = size(a,2);
+    outp = 0;
+    for i =1:sz
+        outp = outp + snr(a(:,i),b(:,i));
+    end
+    outp = outp / sz;
 end
