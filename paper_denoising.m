@@ -40,17 +40,21 @@ if (paperNum == "paper-1-emd-mi")
             end
         end
         
-    
-        high_f_grp = 1:partition;
-        low_f_grp = partition+1:tail;
-        rec = sum(imfs(:,low_f_grp),2);
-        % apply thresholding to high_f_grp
-        for i =1:numel(high_f_grp)
-            imf_t = imfs(:,high_f_grp(i));
-            rec = rec + wthresh(imf_t,'h',thselect(imf_t,'rigrsure'));
+
+        if partition > 1
+            high_f_grp = 1:partition;
+            low_f_grp = partition+1:tail;
+            rec = sum(imfs(:,low_f_grp),2);
+            % apply thresholding to high_f_grp
+            for i =1:numel(high_f_grp)
+                imf_t = imfs(:,high_f_grp(i));
+                rec = rec + wthresh(imf_t,'h',thselect(imf_t,'rigrsure'));
+            end
+        % for the thresholding:
+        % https://www.mathworks.com/help/wavelet/ref/thselect.html
+        else
+            rec = sum(imfs,2);
         end
-        % for the thresholding: https://www.mathworks.com/help/wavelet/ref/thselect.html
-    
         denoised(:,sgsel) = rec;
     
     end

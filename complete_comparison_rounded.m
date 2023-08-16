@@ -1,7 +1,5 @@
 %% Comparison only on one signal
-
-close all
-clearvars -except dataSNR
+clearvars -except dataSNR idx ievalstart jevalstart
 
 load("../../SharingPoint/data/cellular/compiled/09102022_sphere.mat")
 space3D = space3D(:,1:200,1:200);
@@ -39,7 +37,7 @@ tbpf = toc;
 
 %organized_show_image(space3Dbpf)
 
-%% denoise using SVD
+% denoise using SVD
 tic;[denoisedSVDgamma0]  = svd_denoising(space3Dbpf,0); tSVDgamma0 = toc;
 tic;[denoisedSVDgammahalf]  = svd_denoising(space3Dbpf,0.5); tSVDgammahalf = toc;
 tic;[denoisedSVDgamma1]  = svd_denoising(space3Dbpf,1); tSVDgamma1 = toc;
@@ -59,8 +57,14 @@ evalPaper2DWT = get_metrics(denoisedPaper2DWT,space3Dori,tPaper2DWT);
 evalPaper2MODWT = get_metrics(denoisedPaper2MODWT,space3Dori,tPaper2MODWT);
 
 %% save
-savename = sprintf("rounded_eval_%d.mat",dataSNR);
-save(savename,"-regexp","^SNR","^eval","dataSNR")
+savename = sprintf("complete_comparison_rounded_v3/rounded_eval_%d_%d.mat",dataSNR,idx);
+%save(savename,"-regexp","^SNR","^eval","dataSNR")
+
+%% calculate C-mode diameter
+organized_show_image(space3Dbpf);
+organized_show_image(denoisedSVDgammahalf);
+organized_show_image(denoisedPaper1EMDMI);
+organized_show_image(denoisedPaper1Wavelet);
 %% visualization
 % organized_show_image(space3D);
 % organized_show_image(space3Dbpf);
@@ -126,10 +130,12 @@ function [a] = get_ssim_cmode(D,ref)
     % D
     hb = abs(hilbert(D));
     cmodeD = squeeze(max(hb));
+    cmodeD = (cmodeD - min(cmodeD,[],"all")) / range(cmodeD,'all');
 
     % ref
     hb = abs(hilbert(ref));
     cmodeRef = squeeze(max(hb));
+    cmodeRef = (cmodeRef - min(cmodeRef,[],"all")) / range(cmodeRef,"all");
 
     a = ssim(cmodeD,cmodeRef);
 end
@@ -138,10 +144,12 @@ function [a] = get_psnr_cmode(D,ref)
     % D
     hb = abs(hilbert(D));
     cmodeD = squeeze(max(hb));
+    cmodeD = (cmodeD - min(cmodeD,[],"all")) / range(cmodeD,'all');
 
     % ref
     hb = abs(hilbert(ref));
     cmodeRef = squeeze(max(hb));
+    cmodeRef = (cmodeRef - min(cmodeRef,[],"all")) / range(cmodeRef,"all");
 
     a = psnr(cmodeD,cmodeRef);
 end

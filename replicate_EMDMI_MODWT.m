@@ -51,7 +51,7 @@ organized_show_image(space3Dbpf)
 
 %% MED on one signal
 
-signal = space3Dbpf(:,102,125);
+signal = space3Dbpf(:,100,150);
 [imfs,residual] = emd(signal);
 
 partition = ceil(size(imfs,2)/2);
@@ -62,7 +62,7 @@ while cond
     mi_with_noisy_signal = mi(signal,imfs(:,partition));
     selected_group = partition+1:tail;
     mi_with_selected_set = mi(imfs(:,partition),sum(imfs(:,selected_group),2));
-    score = mi_with_noisy_signal - mi_with_selected_set
+    score = mi_with_noisy_signal - mi_with_selected_set;
 
     if(score < 0)% closer to group than noisy
         partition = partition -1;
@@ -75,17 +75,23 @@ while cond
     end
 end
 
-
-high_f_grp = 1:partition;
-low_f_grp = partition+1:tail;
-rec = sum(imfs(:,low_f_grp),2);
-% apply thresholding to high_f_grp
-for i =1:numel(high_f_grp)
-    imf_t = imfs(:,high_f_grp(i));
-    rec = rec + wthresh(imf_t,'h',thselect(imf_t,'rigrsure'));
+if partition > 1
+    high_f_grp = 1:partition;
+    low_f_grp = partition+1:tail;
+    rec = sum(imfs(:,low_f_grp),2);
+    % apply thresholding to high_f_grp
+    for i =1:numel(high_f_grp)
+        imf_t = imfs(:,high_f_grp(i));
+        rec = rec + wthresh(imf_t,'h',thselect(imf_t,'rigrsure'));
+    end
+    % for the thresholding: https://www.mathworks.com/help/wavelet/ref/thselect.html
+else
+    rec = sum(imfs,2);
 end
-% for the thresholding: https://www.mathworks.com/help/wavelet/ref/thselect.html
 figure;plot(imfs)
+figure;plot(rec)
+
+% test one on one
 %% one signal show
 figure
 subplot(241);plot(space3Dori(:,102,33));title("GT");xlim([0 1024])
