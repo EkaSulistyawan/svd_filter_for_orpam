@@ -83,7 +83,7 @@ elseif(paperNum == "paper-2-dwt")
 elseif(paperNum == "paper-2-modwt")
     disp("Run PAPER 2 MODWT")
     denoised = zeros(size(dat2d));
-    for i=1:size(dat2d,2)
+    parfor i=1:size(dat2d,2)
         signal = dat2d(:,i);
         [outp] = wden(signal,'modwtsqtwolog','s','mln',4,'sym4');
         denoised(:,i) = outp;

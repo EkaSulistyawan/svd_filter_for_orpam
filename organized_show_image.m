@@ -3,6 +3,7 @@ function [outp] = organized_show_image(dat)
 % before denoising
 hb = abs(hilbert(dat));
 maxHb = max(hb,[],"all");
+%maxHb = maxHb - 2.5e-4; % for 07062023_rbcFull
 minHb = min(hb,[],"all");
 
 figure;
@@ -12,6 +13,8 @@ nexttile();imagesc(cmode');axis off;colormap hot;clim([minHb maxHb])
 
 where_slice = 14; % on USAF
 where_slice = 163; % on 09102022_sphere
+where_slice = 60; % on non averaged sphere
+where_slice = 71; % on 07062023_rbcFull
 bmode = squeeze(hb(:,:, where_slice));
 nexttile();imagesc(bmode);axis off;colormap hot;clim([minHb maxHb])
 

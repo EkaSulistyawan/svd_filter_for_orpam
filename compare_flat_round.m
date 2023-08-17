@@ -1,5 +1,5 @@
 %% load data 
-load("../data/cellular/compiled/17122022_USAF.mat");
+load("../../SharingPoint/data/cellular/compiled/17122022_USAF.mat")
 space3D = space3D(:,1:200,1:200);
 Fs = 5e9;
 
@@ -14,8 +14,8 @@ dat2d = reshape(space3Dbpf,1024,200*200);
 [u,sflat,v] = svd(dat2d,"econ");
 
 %% load round
-load("../data/cellular/compiled/09102022_sphere.mat"); % same dimension
-load("../data/cellular/compiled/29112022_10umsphere.mat"); % same dimension
+load("../../SharingPoint/data/cellular/compiled/09102022_sphere.mat")
+%load("../data/cellular/compiled/29112022_10umsphere.mat"); % same dimension
 
 space3D = space3D(:,1:200,1:200);
 Fs = 5e9;
