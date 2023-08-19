@@ -5,7 +5,7 @@ y = zeros(1,datsize);
 parfor i=1:datsize
     roi = squeeze(d(:,:,i));
     dctroi = dct2(abs(roi));
-    dctroi(1,1) = 0;
+    dctroi(1,1) = min(dctroi,[],"all");
     maxdctroi = max(dctroi(:));
     y(i) = maxdctroi;
 end
