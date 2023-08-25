@@ -10,6 +10,6 @@ bgx_round = 141:150; bgy_round = 53:62;
 sgx_varavg = 5:14; sgy_varavg = 51:60;
 bgx_varavg = 33:42; bgy_varavg = 23:32;
 
-%% rounded surface varavg
+%% rounded rbc
 sgx_rbc = 11:20; sgy_rbc = 67:76;
 bgx_rbc = 49:58; bgy_rbc = 27:36;
