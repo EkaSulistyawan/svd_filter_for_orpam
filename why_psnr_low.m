@@ -1,0 +1,1 @@
+load("var_avg_data\splitted_indiv_avg_100.mat")

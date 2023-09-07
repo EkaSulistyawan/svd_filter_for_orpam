@@ -66,7 +66,7 @@ subplot(132)
 taxis = (1:1024)*1e9/Fs;
 xaxis = 1:1024;
 plot(xaxis,diag(s));
-xlabel("Number of Singular Vectors (#)")
+xlabel("Number of Singular Values (#)")
 ylabel("Magnitude (a.u.)")
 title("(D)")
 set(gca,"FontName",'Times','FontSize',18)
@@ -199,12 +199,21 @@ cmode = squeeze(max(hb));
 imagesc(cmode');axis off;colormap hot;
 if(p == 1)
     line([1 200],[32 32],'LineWidth',2,'Color','g','LineStyle','--')
-    line([156 176],[188 188],'LineWidth',5,'Color','white')
+    line([156 176],[188 188],'LineWidth',2,'Color','white')
 end
 end
 
 
 for p=1:numSel
+    sel = p;
+% reconstruct the data
+srec = zeros(size(s));
+srec(sel,sel) = s(sel,sel);
+rec = u*srec*v';
+rec3d= reshape(rec,1024,200,200);
+
+% get the cmode image
+hb = abs(hilbert(rec3d));
 % get the bmode
 nexttile(p + 2*totalCol)
 bmode = squeeze(hb(:,:,32));
@@ -218,7 +227,7 @@ set(gca,"FontName","Times New Roman","FontSize",14)
 end
 ax = gcf;
 exportgraphics(ax,'./exported_images/fig3_exampleUSAF.emf')
-%
+%%
 hf = figure('Units','normalized'); 
 colormap hot
 cbh = colorbar;

@@ -2,6 +2,10 @@
 sgx_flat = 96:105; sgy_flat = 24:33;
 bgx_flat = 26:35; bgy_flat = 95:104;
 
+sgx_flat2 = 68:77;sgy_flat2 = 78:87; 
+bgx_flat2 = 18:27;bgy_flat2 = 13:22; 
+
+
 %% rounded surface
 sgx_round = 96:105; sgy_round = 147:156;
 bgx_round = 141:150; bgy_round = 53:62;

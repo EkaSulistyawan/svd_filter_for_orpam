@@ -235,60 +235,69 @@ minval = min(u(:,1:numSel),[],"all");
 figure('Position',[1955,167,1887,849])
 mytile = tiledlayout(3,numSel);
 for p=1:(numSel)
-sel = p;
-
-% see the A line
-nexttile
-taxis = (1:1024)*1e9/Fs;
-plot(taxis,u(:,sel));
-xlabel("Time (ns)")
-ylabel("Intensity (a.u.)")
-ylim([minval, maxval])
-xlim([1, max(taxis)])
-set(gca,"FontName","Times New Roman","FontSize",14)
+    sel = p+6;
+    
+    % see the A line
+    nexttile
+    taxis = (1:1024)*1e9/Fs;
+    plot(taxis,u(:,sel));
+    xlabel("Time (ns)")
+    ylabel("Intensity (a.u.)")
+    ylim([minval, maxval])
+    xlim([1, max(taxis)])
+    set(gca,"FontName","Times New Roman","FontSize",14)
 end
 
 %
 for p=1:(numSel)
-sel = p;
-% reconstruct the data
-srec = zeros(size(s));
-srec(sel,sel) = s(sel,sel);
-rec = u*srec*v';
-rec3d= reshape(rec,1024,200,200);
-
-% get the cmode image
-nexttile(p + totalCol)
-hb = abs(hilbert(rec3d));
-cmode = squeeze(max(hb));
-imagesc(cmode');axis off;colormap hot;
-if(p == 1)
-    line([1 200],[159 159],'LineWidth',2,'Color','g','LineStyle','--')
-    line([156 176],[100 100],'LineWidth',5,'Color','white')
-end
+    sel = p+6;
+    % reconstruct the data
+    srec = zeros(size(s));
+    srec(sel,sel) = s(sel,sel);
+    rec = u*srec*v';
+    rec3d= reshape(rec,1024,200,200);
+    
+    % get the cmode image
+    nexttile(p + totalCol)
+    hb = abs(hilbert(rec3d));
+    cmode = squeeze(max(hb));
+    imagesc(cmode');axis off;colormap hot;
+    if(p == 4)
+        line([1 200],[159 159],'LineWidth',2,'Color','g','LineStyle','--')
+        line([156 176],[100 100],'LineWidth',2,'Color','white')
+    end
 end
 
 
 for p=1:numSel
-% get the bmode
-nexttile(p + 2*totalCol)
-bmode = squeeze(hb(:,:,32));
-xaxis = (1:200)*200 / 1000; 
-yaxis = (1:1024)*1e6*1480/Fs;
-imagesc(xaxis,yaxis,bmode);colormap hot;
-xlabel(['Length (' char(181) 'm)'])
-ylabel(['Depth (' char(181) 'm)'])
-set(gca,"FontName","Times New Roman","FontSize",14)
+    sel = p+6;
+    % reconstruct the data
+    srec = zeros(size(s));
+    srec(sel,sel) = s(sel,sel);
+    rec = u*srec*v';
+    rec3d= reshape(rec,1024,200,200);
+    hb = abs(hilbert(rec3d));
+
+    % get the bmode
+    nexttile(p + 2*totalCol)
+    bmode = squeeze(hb(:,:,32));
+    xaxis = (1:200)*200 / 1000; 
+    yaxis = (1:1024)*1e6*1480/Fs;
+    imagesc(xaxis,yaxis,bmode);colormap hot;
+    xlabel(['Length (' char(181) 'm)'])
+    ylabel(['Depth (' char(181) 'm)'])
+    set(gca,"FontName","Times New Roman","FontSize",14)
 
 end
+
 ax = gcf;
-exportgraphics(ax,'./exported_images/fig4_exampleUSAF.emf')
+exportgraphics(ax,'./exported_images/fig4_exampleSphere.emf')
 %%
 hf = figure('Units','normalized'); 
 colormap hot
 cbh = colorbar;
 cbh.Location = "south";
 cbh.Label.String="Normalized Intensity [0, 1]";
-set(gca,"Visible",false,"FontName","Times New Roman","FontSize",14)
+set(gca,"Visible",false,"FontName","Times New Roman","FontSize",20)
 ax = gcf;
-exportgraphics(ax,'./exported_images/fig4_colorbar.emf')
+exportgraphics(ax,'./exported_images/colorbar_top.emf')

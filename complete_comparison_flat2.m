@@ -1,24 +1,37 @@
 %% Comparison only on one signal
-clear all
-close all
+clearvars -except dataSNR idx ievalstart jevalstart
 
+% USAF1
+% load("../../SharingPoint/data/cellular/compiled/17122022_USAF.mat")
 
-load("../../SharingPoint/data/cellular/compiled/07062023_rbcFull.mat")
-%%
-sz = size(space3D,2)-1;
-space3D = space3D(:,1:sz,1:sz);
+% USAF2
+load("../../SharingPoint/data/cellular/compiled/04092023_USAF.mat")
+
+sz = size(space3D,2);
+space3D = space3D(:,1:sz-1,1:sz-1);
 Fs = 5e9;
 
 % for nonflat
 global_param;
-sgx = sgx_rbc; 
-sgy = sgy_rbc;
-bgx = bgx_rbc; 
-bgy = bgy_rbc;
+sgx = sgx_flat2; 
+sgy = sgy_flat2;
+bgx = bgx_flat2; 
+bgy = bgy_flat2;
 
 sg = reshape(space3D(:,sgx,sgy),1024,size(sgx,2)*size(sgy,2));
 bg = reshape(space3D(:,bgx,bgy),1024,size(bgx,2)*size(bgy,2));
 SNRinit = snr2d(sg,bg);
+
+% add additive gaussian white noise
+dataSNR = 69; % in dB, set a stupidly high SNR to make them okay
+space3Dnoised = awgn(space3D,dataSNR);
+sg = reshape(space3Dnoised(:,sgx,sgy),1024,size(sgx,2)*size(sgy,2));
+bg = reshape(space3Dnoised(:,bgx,bgy),1024,size(bgx,2)*size(bgy,2));
+SNRnoised = snr2d(sg,bg);
+
+% change the original value
+space3Dori = space3D;
+space3D = space3Dnoised;
 
 % BPF
 fcl = 10e6;
@@ -29,43 +42,33 @@ space3Dbpf = filtfilt(b,a,space3D);
 tbpf = toc;
 
 organized_show_image(space3Dbpf)
-%%
-close all
-cmode_func = @(x)(squeeze(max(abs(hilbert(x)))));
-cmode = cmode_func(denoisedSVDgammahalf);
-figure;imagesc(cmode');axis image;colormap hot
-figure;plot(cmode(1:33,71)); %% for biconcave
-figure;plot(cmode(58:95,112)); %% for biconcave
-figure;plot(cmode(95:120,112)); %% for biconcave
-vfigure;plot(cmode(36:66,74)); %% for biconcave
 
 %% denoise using SVD
 tic;[denoisedSVDgamma0]  = svd_denoising(space3Dbpf,0); tSVDgamma0 = toc;
 tic;[denoisedSVDgammahalf]  = svd_denoising(space3Dbpf,0.5); tSVDgammahalf = toc;
 tic;[denoisedSVDgamma1]  = svd_denoising(space3Dbpf,1); tSVDgamma1 = toc;
-% tic;[denoisedPaper1EMDMI] = paper_denoising(space3Dbpf,'paper-1-emd-mi'); tPaper1EMDMI = toc;
-% tic;[denoisedPaper1Wavelet] = paper_denoising(space3Dbpf,'paper-1-wavelet'); tPaper1Wavelet = toc;
-% tic;[denoisedPaper2DWT] = paper_denoising(space3Dbpf,'paper-2-dwt'); tPaper2DWT = toc;
-% tic;[denoisedPaper2MODWT] = paper_denoising(space3Dbpf,'paper-2-modwt'); tPaper2MODWT = toc;
+tic;[denoisedPaper1EMDMI] = paper_denoising(space3Dbpf,'paper-1-emd-mi'); tPaper1EMDMI = toc;
+tic;[denoisedPaper1Wavelet] = paper_denoising(space3Dbpf,'paper-1-wavelet'); tPaper1Wavelet = toc;
+tic;[denoisedPaper2DWT] = paper_denoising(space3Dbpf,'paper-2-dwt'); tPaper2DWT = toc;
+tic;[denoisedPaper2MODWT] = paper_denoising(space3Dbpf,'paper-2-modwt'); tPaper2MODWT = toc;
 
 %% get evaluation metrics
-% evalBPF = get_metrics(space3Dbpf,space3Dori,tbpf);
-% evalSVDgamma0 = get_metrics(denoisedSVDgamma0,space3Dori,tSVDgamma0);
-% evalSVDgammahalf = get_metrics(denoisedSVDgammahalf,space3Dori,tSVDgammahalf);
-% evalSVDgamma1 = get_metrics(denoisedSVDgamma1,space3Dori,tSVDgamma1);
-% evalPaper1EMDMI = get_metrics(denoisedPaper1EMDMI,space3Dori,tPaper1EMDMI);
-% evalPaper1Wavelet = get_metrics(denoisedPaper1Wavelet,space3Dori,tPaper1Wavelet);
-% evalPaper2DWT = get_metrics(denoisedPaper2DWT,space3Dori,tPaper2DWT);
-% evalPaper2MODWT = get_metrics(denoisedPaper2MODWT,space3Dori,tPaper2MODWT);
+evalBPF = get_metrics(space3Dbpf,space3Dori,tbpf);
+evalSVDgamma0 = get_metrics(denoisedSVDgamma0,space3Dori,tSVDgamma0);
+evalSVDgammahalf = get_metrics(denoisedSVDgammahalf,space3Dori,tSVDgammahalf);
+evalSVDgamma1 = get_metrics(denoisedSVDgamma1,space3Dori,tSVDgamma1);
+evalPaper1EMDMI = get_metrics(denoisedPaper1EMDMI,space3Dori,tPaper1EMDMI);
+evalPaper1Wavelet = get_metrics(denoisedPaper1Wavelet,space3Dori,tPaper1Wavelet);
+evalPaper2DWT = get_metrics(denoisedPaper2DWT,space3Dori,tPaper2DWT);
+evalPaper2MODWT = get_metrics(denoisedPaper2MODWT,space3Dori,tPaper2MODWT);
 
 %% save
-%savename = sprintf("complete_comparison_rounded_v3/rounded_eval_%d_%d.mat",dataSNR,idx);
+savename = sprintf("complete_comparison_flated_v3/rounded_eval_%d_%d.mat",dataSNR,idx);
 %save(savename,"-regexp","^SNR","^eval","dataSNR")
 
 %% calculate C-mode diameter
 organized_show_image(space3Dbpf);
 organized_show_image(denoisedSVDgammahalf);
-organized_show_image(denoisedSVDgamma0);
 organized_show_image(denoisedPaper1EMDMI);
 organized_show_image(denoisedPaper1Wavelet);
 %% visualization
@@ -100,10 +103,10 @@ end
 
 function [a] = get_cnr(D)
     global_param;
-    sgx = sgx_rbc; 
-    sgy = sgy_rbc;
-    bgx = bgx_rbc; 
-    bgy = bgy_rbc;
+    sgx = sgx_flat2; 
+    sgy = sgy_flat2;
+    bgx = bgx_flat2; 
+    bgy = bgy_flat2;
 
     hb = abs(hilbert(D));
     cmode = squeeze(max(hb));
@@ -118,10 +121,10 @@ end
 
 function [a] = get_snr(D)
     global_param;
-    sgx = sgx_rbc; 
-    sgy = sgy_rbc;
-    bgx = bgx_rbc; 
-    bgy = bgy_rbc;
+    sgx = sgx_flat2; 
+    sgy = sgy_flat2;
+    bgx = bgx_flat2; 
+    bgy = bgy_flat2;
 
     sg = reshape(D(:,sgx,sgy),1024,size(sgx,2)*size(sgy,2));
     bg = reshape(D(:,bgx,bgy),1024,size(bgx,2)*size(bgy,2));

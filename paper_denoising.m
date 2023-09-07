@@ -41,7 +41,7 @@ if (paperNum == "paper-1-emd-mi")
         end
         
 
-        if partition > 1
+        if partition > 2
             high_f_grp = 1:partition;
             low_f_grp = partition+1:tail;
             rec = sum(imfs(:,low_f_grp),2);
