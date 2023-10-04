@@ -1,6 +1,6 @@
 *.asv
 complete_comparison_rounded*
 *.mat
-
+*.emf
 obsolete
 var_avg_data

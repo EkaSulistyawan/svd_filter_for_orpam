@@ -17,3 +17,11 @@ bgx_varavg = 33:42; bgy_varavg = 23:32;
 %% rounded rbc
 sgx_rbc = 11:20; sgy_rbc = 67:76;
 bgx_rbc = 49:58; bgy_rbc = 27:36;
+
+%% melanoma
+sgx_mel = 38:47 ; sgy_mel = 78:87;
+bgx_mel = 21:30 ; bgy_mel = 89:98;
+
+%% rbc
+sgx_rbcArt = 57:66 ; sgy_rbcArt = 51:60;
+bgx_rbcArt = 99:108 ; bgy_rbcArt = 107:116;

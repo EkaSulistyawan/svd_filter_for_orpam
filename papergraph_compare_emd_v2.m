@@ -55,10 +55,21 @@ emdbpf = emd(sg);
 
 %% 
 close all
-figure("Position",[3251,816,486,226]);
+figure("Position",[2380,517,967,226]);
+ax = tiledlayout(1,2);
+
+nexttile    
 plot(taxis,space3D(:,100,150))
-title("Raw Signal",'FontName','Times New Roman')
-xlabel('Time (s)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
+title("Before Denoising (Without BPF)",'FontName','Times New Roman')
+xlabel('Time (ns)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
+ylabel('Intensity (a.u.)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
+set(gca,'FontName','Times New Roman','FontSize',12)
+axis tight
+
+nexttile
+plot(taxis,space3Dbpf(:,100,150))
+title("M_{raw} (With BPF)",'FontName','Times New Roman')
+xlabel('Time (ns)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
 ylabel('Intensity (a.u.)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
 set(gca,'FontName','Times New Roman','FontSize',12)
 axis tight
@@ -108,7 +119,7 @@ set(gca,'FontName','Times New Roman','FontSize',12)
 
 end
 
-xlabel(ax,'Time (s)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
+xlabel(ax,'Time (ns)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
 ylabel(ax,'Intensity (a.u.)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
 
 ax = gcf;

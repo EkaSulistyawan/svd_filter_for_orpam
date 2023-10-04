@@ -70,7 +70,7 @@ exportgraphics(ax,'./exported_images/fig9_ROI.emf')
 %% fig 11
 load("saved_rbc\rbc.mat");
 
-cmode = cmodefunc(space3D);
+cmode = cmodefunc(denoisedSVDgamma0);
 figure;
 imagesc(cmode');axis image off;colormap hot
 %line([156 176],[100 100],'LineWidth',2,'Color','white')

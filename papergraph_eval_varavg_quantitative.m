@@ -1,5 +1,6 @@
 % figure('Position',[1827,103,1640,963]); % v1
-figure('Position',[2009,143,1640,914]); % v2
+%figure('Position',[2009,143,1640,914]); % v2
+figure('Position',[2051,133,1640,882]); % v3
 tiledlayout(2,3)
 
 
@@ -14,7 +15,7 @@ for i=1:100
 end
 
 ax = nexttile;
-scatter([1:100],x_dat);
+plot([1:100],x_dat,'Color','r','LineWidth',2);
 %legend('Location','southeast')
 axis tight
 ylim([0 inf])
@@ -45,7 +46,7 @@ for i=1:100
 end
 
 ax = nexttile;
-scatter(x_dat,snr_dat(:,1),'DisplayName','BPF'); hold on
+scatter(x_dat,snr_dat(:,1),'DisplayName','BPF (M_{raw})'); hold on
 scatter(x_dat,snr_dat(:,2),'DisplayName','EMD-MI'); hold on
 scatter(x_dat,snr_dat(:,3),'DisplayName','Sym6-SURE'); hold on
 scatter(x_dat,snr_dat(:,4),'DisplayName','Sym4-DWT'); hold on
@@ -86,7 +87,7 @@ for i=1:100
 end
 
 ax = nexttile;;
-scatter(x_dat,snr_dat(:,1),'DisplayName','BPF'); hold on
+scatter(x_dat,snr_dat(:,1),'DisplayName','BPF (M_{raw})'); hold on
 scatter(x_dat,snr_dat(:,2),'DisplayName','EMD-MI'); hold on
 scatter(x_dat,snr_dat(:,3),'DisplayName','Sym6-SURE'); hold on
 scatter(x_dat,snr_dat(:,4),'DisplayName','Sym4-DWT'); hold on
@@ -122,7 +123,7 @@ for i=1:100
 end
 
 ax = nexttile;;
-scatter(x_dat,snr_dat(:,1),'DisplayName','BPF'); hold on
+scatter(x_dat,snr_dat(:,1),'DisplayName','BPF (M_{raw})'); hold on
 scatter(x_dat,snr_dat(:,2),'DisplayName','EMD-MI'); hold on
 scatter(x_dat,snr_dat(:,3),'DisplayName','Sym6-SURE'); hold on
 scatter(x_dat,snr_dat(:,4),'DisplayName','Sym4-DWT'); hold on
@@ -158,7 +159,7 @@ for i=1:100
 end
 
 ax = nexttile;;
-scatter(x_dat,snr_dat(:,1),'DisplayName','BPF'); hold on
+scatter(x_dat,snr_dat(:,1),'DisplayName','BPF (M_{raw})'); hold on
 scatter(x_dat,snr_dat(:,2),'DisplayName','EMD-MI'); hold on
 scatter(x_dat,snr_dat(:,3),'DisplayName','Sym6-SURE'); hold on
 scatter(x_dat,snr_dat(:,4),'DisplayName','Sym4-DWT'); hold on
@@ -203,7 +204,7 @@ title("(F)")
 ylabel("Time (s)")
 ylim([0 8])
 set(gca,'FontName','Times New Roman','FontSize',18)
-ax.XTickLabel = {'BPF','EMD-MI','Sym6-SURE','Sym4-DWT','Sym4-MODWT','SVD (\gamma=0.0)','SVD (\gamma=0.5)','SVD (\gamma=1.0)'};
+ax.XTickLabel = {'BPF (M_{raw})','EMD-MI','Sym6-SURE','Sym4-DWT','Sym4-MODWT','SVD (\gamma=0.0)','SVD (\gamma=0.5)','SVD (\gamma=1.0)'};
 ax.XAxis.FontSize = 14;
 
 % for EMD-MI

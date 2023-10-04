@@ -51,7 +51,7 @@ evalPaper2DWT = get_metrics(denoisedPaper2DWT,space3Dori,tPaper2DWT);
 evalPaper2MODWT = get_metrics(denoisedPaper2MODWT,space3Dori,tPaper2MODWT);
 
 %% save
-save("saved_rbc\rbc2.mat")
+save("saved_rbc\rbc3_test.mat")
 
 %%
 close all

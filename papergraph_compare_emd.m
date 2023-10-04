@@ -107,7 +107,7 @@ set(gca,'FontName','Times New Roman','FontSize',12)
 
 end
 
-xlabel(ax,'Time (s)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
+xlabel(ax,'Time (ns)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
 ylabel(ax,'Intensity (a.u.)','FontName','Times New Roman','FontSize',12,'FontWeight','bold')
 
 ax = gcf;

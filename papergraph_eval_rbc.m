@@ -2,7 +2,7 @@ load("saved_rbc\rbc2.mat");
 
 
 %% plot
-titlelist = ["Raw","BPF","SVD \gamma=0.0", "SVD \gamma=0.5","SVD \gamma=1.0","EMD-MI",...
+titlelist = [['Before' newline 'Denoising'],"BPF (M_{raw})","SVD \gamma=0.0", "SVD \gamma=0.5","SVD \gamma=1.0","EMD-MI",...
     "Sym6-SURE"];
 figure("Position",[2012,113,1623,916])
 tl = tiledlayout(4,7,'TileSpacing','tight');
@@ -33,7 +33,7 @@ nexttile(i+14)
 xaxis = (1:33)*250 / 1000;
 plot(xaxis,im(1:33,71))
 axis tight
-ylim([0.05 0.3])
+ylim([0.05 0.8])
 xlabel(['Length (' char(181) 'm)'])
 ylabel(' Norm. Intensity (a.u.)')
 set(gca,'FontName','Times New Roman','FontSize',12)
@@ -66,14 +66,14 @@ end
 % put legend
 leg = legend('Orientation', 'Horizontal','FontName','Times New Roman','FontSize',12);
 leg.Layout.Tile = 'south';
-%ax = gcf;
-%exportgraphics(ax,'./exported_images/fig10_rbc.emf')
+ax = gcf;
+exportgraphics(ax,'./exported_images/fig10_rbc_v2.emf')
 %%
 function p = cmodefunc(x)
     p = squeeze(max(abs(hilbert(x))));
     p = (p - min(p(:))) / range(p(:));
-    % p(p > 0.6) = 0.6;
-    % p = (p - min(p(:))) / range(p(:));
+    p(p > 0.45) = 0.45;
+    p = (p - min(p(:))) / range(p(:));
 end
 
 function p = bmodefunc(x)
