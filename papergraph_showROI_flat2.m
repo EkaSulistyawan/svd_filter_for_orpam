@@ -71,11 +71,11 @@ exportgraphics(ax,'./exported_images/fig9_ROI.emf')
 load("saved_rbc\rbc.mat");
 
 %%
-cmode = cmodefunc(denoisedSVDgamma0);
+cmode = cmodefunc(space3D);
 figure;
 imagesc(cmode');axis image off;colormap hot
 %line([156 176],[100 100],'LineWidth',2,'Color','white')
-global_param;
+%global_param;
 sgx = sgx_rbc; 
 sgy = sgy_rbc;
 bgx = bgx_rbc; 
@@ -85,6 +85,38 @@ rectangle('Position',[bgx(1) bgy(1) range(bgx) range(bgy)],'LineWidth',2,'EdgeCo
 
 ax = gcf;
 exportgraphics(ax,'./exported_images/fig11_ROI.emf')
+
+%%
+cmode = cmodefunc(space3D);
+figure;
+imagesc(cmode');axis image off;colormap hot
+%line([156 176],[100 100],'LineWidth',2,'Color','white')
+global_param;
+sgx = sgx_mel; 
+sgy = sgy_mel;
+bgx = bgx_mel; 
+bgy = bgy_mel;
+rectangle('Position',[sgx(1) sgy(1) range(sgx) range(sgy)],'LineWidth',2,'EdgeColor','b')
+rectangle('Position',[bgx(1) bgy(1) range(bgx) range(bgy)],'LineWidth',2,'EdgeColor','g')
+
+ax = gcf;
+exportgraphics(ax,'./exported_images/melanoma_roi.emf')
+
+%%
+cmode = cmodefunc(space3D);
+figure;
+imagesc(cmode');axis image off;colormap hot
+%line([156 176],[100 100],'LineWidth',2,'Color','white')
+global_param;
+sgx = sgx_rbcArt; 
+sgy = sgy_rbcArt;
+bgx = bgx_rbcArt; 
+bgy = bgy_rbcArt;
+rectangle('Position',[sgx(1) sgy(1) range(sgx) range(sgy)],'LineWidth',2,'EdgeColor','b')
+rectangle('Position',[bgx(1) bgy(1) range(bgx) range(bgy)],'LineWidth',2,'EdgeColor','g')
+
+ax = gcf;
+exportgraphics(ax,'./exported_images/rbcart_roi.emf')
 %% functions
 function p = cmodefunc(x)
     p = squeeze(max(abs(hilbert(x))));

@@ -80,7 +80,7 @@ evalPaper2DWT = get_metrics(denoisedPaper2DWT,space3Dori,tPaper2DWT);
 evalPaper2MODWT = get_metrics(denoisedPaper2MODWT,space3Dori,tPaper2MODWT);
 
 %%
-% save("saved_others\rbc_artifact_test.mat")
+save("saved_others\rbc_artifact_test2.mat")
 
 %%
 
@@ -106,7 +106,7 @@ figure;imagesc(im);axis image;colormap hot;title("\gamma=0");axis off
 im = cmodefunc(space3D2 - denoisedSVDgammahalf);
 figure;imagesc(im);axis image;colormap hot;title("\gamma=0.5");axis off
 im = cmodefunc(space3D2 - denoisedSVDgamma1);
-figure;imagesc(im);axis image;colormap hot;title("\gamma=1");axis off
+figure;imagesc(im);axis image;colormap hot;title("\gamma=1");axis off 
 im = cmodefunc(space3D2 - denoisedPaper1EMDMI);
 figure;imagesc(im);axis image;colormap hot;title("EMDMI");axis off
 im = cmodefunc(space3D2 - denoisedPaper1Wavelet);

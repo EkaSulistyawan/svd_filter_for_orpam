@@ -1,4 +1,4 @@
-load("saved_rbc\rbc2.mat");
+load("saved_others\rbc_artifact_test2.mat");
 
 
 %% plot
@@ -23,17 +23,17 @@ nexttile(i)
 im = cmodefunc(seldat.(varnames{i}));
 imagesc(im');title(titlelist(i));colormap hot;axis off
 if(i == 1)
-    line([1 120],[71 71],'LineWidth',2,'Color','g','LineStyle','--')
-    line([1 33],[73 73],'LineWidth',2,'Color','c','LineStyle','--')
-    line([56 76],[14 14],'LineWidth',2,'Color','white')
+    line([1 200],[9 9],'LineWidth',2,'Color','g','LineStyle','--')
+    line([68 165],[9 9],'LineWidth',2,'Color','c','LineStyle','--')
+    line([10 30],[190 190],'LineWidth',2,'Color','white')
 end
 set(gca,'FontName','Times New Roman','FontSize',12)
 
 nexttile(i+14)
-xaxis = (1:33)*250 / 1000;
-plot(xaxis,im(1:33,71))
+xaxis = (1:98)*250 / 1000;
+plot(xaxis,im(68:165,9))
 axis tight
-ylim([0.05 0.8])
+% ylim([0.05 0.8])
 xlabel(['Length (' char(181) 'm)'])
 ylabel(' Norm. Intensity (a.u.)')
 set(gca,'FontName','Times New Roman','FontSize',12)
@@ -51,7 +51,12 @@ set(gca,'FontName','Times New Roman','FontSize',12)
 nexttile(i+21)
 taxis = (1:1024)*1e9/Fs;
 dat3d = seldat.(varnames{i});
-plot(taxis,dat3d(:,9,55),'DisplayName','Signal');hold on;plot(taxis,dat3d(:,37,27),'DisplayName','Noise');hold off
+sgAline_posX = 65;
+sgAline_posY = 54;
+bgAline_posX = 101;
+bgAline_posY = 55;
+plot(taxis,dat3d(:,sgAline_posX,sgAline_posY),'DisplayName','Signal');hold on;
+plot(taxis,dat3d(:,bgAline_posX,bgAline_posY),'DisplayName','Noise');hold off
 xlabel("Time (ns)")
 ylabel("Intensity (a.u.)")
 ylim([-3e-4 5e-4]);
@@ -67,17 +72,17 @@ end
 leg = legend('Orientation', 'Horizontal','FontName','Times New Roman','FontSize',12);
 leg.Layout.Tile = 'south';
 ax = gcf;
-%exportgraphics(ax,'./exported_images/fig10_rbc_v2.emf')
+exportgraphics(ax,'./exported_images/supp_rbc_artifact.emf')
 %%
 function p = cmodefunc(x)
     p = squeeze(max(abs(hilbert(x))));
-    p = (p - min(p(:))) / range(p(:));
-    p(p > 0.45) = 0.45;
-    p = (p - min(p(:))) / range(p(:));
+    % p = (p - min(p(:))) / range(p(:));
+    % p(p > 0.45) = 0.45;
+    % p = (p - min(p(:))) / range(p(:));
 end
 
 function p = bmodefunc(x)
     hb = abs(hilbert(x));
-    p = squeeze(hb(:,:,71));
+    p = squeeze(hb(:,:,9));
     p = (p - min(p(:))) / range(p(:));
 end

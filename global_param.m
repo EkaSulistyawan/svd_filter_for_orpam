@@ -24,4 +24,4 @@ bgx_mel = 21:30 ; bgy_mel = 89:98;
 
 %% rbc
 sgx_rbcArt = 57:66 ; sgy_rbcArt = 51:60;
-bgx_rbcArt = 99:108 ; bgy_rbcArt = 107:116;
+bgx_rbcArt = 54:63 ; bgy_rbcArt = 96:105;
