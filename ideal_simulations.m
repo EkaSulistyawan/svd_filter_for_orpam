@@ -13,6 +13,10 @@ tiledlayout(1,4);
 nshape = linspace(0.5,-0.5,l);
 h = [zeros(1,(T-l)/2),nshape,zeros(1,(T-l)/2)];
 
+fs = 5e9;
+[b,a] = butter(4,[10e6 100e6] / (fs/2),'bandpass');
+h = filtfilt(b,a,h);
+
 nexttile
 plot(1:T,h,'LineWidth',2,'Color','black');
 axis square
@@ -37,23 +41,31 @@ title("\it H")
 R = zeros(T,N);
 
 % rule 1
-kpctg = 1/T;
-rnd = randperm(T*N,kpctg*T*N);
-R(rnd) = 1;
+% kpctg = 1/T;
+% rnd = randperm(T*N,kpctg*T*N);
+% R(rnd) = 1;
 
 % rule 2
 rule2 = 1:N;
 R(512,rule2) = 1;
 
 % rule 3
-rule3 = randperm(N,1);
-rule3 = rule3:(rule3+0.04*N);
-R(200,rule3) = 1;
+% rule3 = randperm(N,1);
+% rule3 = rule3:(rule3+0.04*N);
+% R(200,rule3) = 1;
 
 % rule 4
-rule4 = randperm(N,1);
-rule4 = rule4 :(rule4+0.08*N);
-R(800,rule4) = 1;
+% rule4 = randperm(N,1);
+% rule4 = rule4 :(rule4+0.08*N);
+% R(800,rule4) = 1;
+
+% rule 5
+rule5 = 1000:2000;
+R(400,rule5) = 1;
+
+% rule 6
+rule5 = 4000:4500;
+R(800,rule5) = 1;
 
 nexttile
 imagesc(R);
@@ -160,3 +172,52 @@ H2 = circshift(H2,512,2);
 
 % based on Eq 5b
 VR2 = VP(:,1:3);
+
+%% UP filt
+[u ,s ,v] = svd(P,'econ');
+[uf,sf,vf] = svd(fft(P),'econ');
+urec = real(ifft(uf));
+kk = real(ifft(uf*sf*vf'));
+
+%% effect of noise
+fth = mag2db(abs(fft(h)));
+signal_level = max(fth);
+
+noised = awgn(h,10);
+n = noised - h;
+ftnoised = mag2db(abs(fft(noised)));
+ftn = mag2db(abs(fft(n)));
+
+figure;
+plot(noised);hold on
+plot(h);hold off
+
+figure;
+plot(ftnoised);hold on
+plot(ftn);hold off
+xlim([0 512])
+title("Frequency")
+
+%% add noise to P
+noised = awgn(P,-10);
+[UN,SN,VN] = svd(noised);
+figure;plot(UN(:,1:1))
+figure;imagesc(noised)
+
+%% add noise to R
+PN = H*awgn(R,20);
+[UN,SN,VN] = svd(PN);
+figure;plot(UN(:,1:3))
+figure;
+tiledlayout(1,2)
+nexttile
+imagesc(P);axis square
+nexttile
+imagesc(PN);axis square
+
+figure;
+tiledlayout(1,2)
+nexttile
+imagesc(abs(fft(UP)));axis square
+nexttile
+imagesc(abs(fft(UN)));axis square
