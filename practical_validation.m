@@ -1,5 +1,5 @@
 clear all
-load("../../Tohoku/Research Project/CS/Matlab/data/cellular/compiled/17122022_USAF.mat")
+load("../../Tohoku/Research Project/CS/Matlab/data/cellular/compiled/07062023_rbcFull.mat")
 sz = size(space3D,2)-1;
 space3D = space3D(:,1:sz,1:sz);
 cmodefunc = @(x)(squeeze(max(abs(hilbert(space3D)))));
@@ -87,3 +87,8 @@ for j=1:nr*nc
     plot(sg,'Color','red')
     hold off
 end
+
+%%
+[UPF,SPF,VPF] = svd(fft(space2D),"econ");
+rec = ifft(SPF*UPF*SPF*VPF');
+figure;imagesc(abs(rec))

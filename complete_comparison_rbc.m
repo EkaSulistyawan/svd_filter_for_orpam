@@ -3,7 +3,8 @@ clear all
 close all
 
 
-load("../../SharingPoint/data/cellular/compiled/07062023_rbcFull.mat")
+%load("../../SharingPoint/data/cellular/compiled/07062023_rbcFull.mat")
+load("../../Tohoku/Research Project/CS/Matlab/data/cellular/compiled/07062023_rbcFull.mat")
 %%
 sz = size(space3D,2)-1;
 space3D = space3D(:,1:sz,1:sz);
@@ -30,40 +31,47 @@ tbpf = toc;
 
 organized_show_image(space3Dbpf)
 %%
-close all
-cmode_func = @(x)(squeeze(max(abs(hilbert(x)))));
-cmode = cmode_func(denoisedSVDgammahalf);
-figure;imagesc(cmode');axis image;colormap hot
-figure;plot(cmode(1:33,71)); %% for biconcave
-figure;plot(cmode(58:95,112)); %% for biconcave
-figure;plot(cmode(95:120,112)); %% for biconcave
-vfigure;plot(cmode(36:66,74)); %% for biconcave
+% close all
+% cmode_func = @(x)(squeeze(max(abs(hilbert(x)))));
+% cmode = cmode_func(denoisedSVDgammahalf);
+% figure;imagesc(cmode');axis image;colormap hot
+% figure;plot(cmode(1:33,71)); %% for biconcave
+% figure;plot(cmode(58:95,112)); %% for biconcave
+% figure;plot(cmode(95:120,112)); %% for biconcave
+% vfigure;plot(cmode(36:66,74)); %% for biconcave
 
 %% denoise using SVD
 tic;[denoisedSVDgamma0]  = svd_denoising(space3Dbpf,0); tSVDgamma0 = toc;
-tic;[denoisedSVDgammahalf]  = svd_denoising(space3Dbpf,0.5); tSVDgammahalf = toc;
+% tic;[denoisedSVDgammahalf]  = svd_denoising(space3Dbpf,0.5); tSVDgammahalf = toc;
 tic;[denoisedSVDgamma1]  = svd_denoising(space3Dbpf,1); tSVDgamma1 = toc;
 % tic;[denoisedPaper1EMDMI] = paper_denoising(space3Dbpf,'paper-1-emd-mi'); tPaper1EMDMI = toc;
-% tic;[denoisedPaper1Wavelet] = paper_denoising(space3Dbpf,'paper-1-wavelet'); tPaper1Wavelet = toc;
-% tic;[denoisedPaper2DWT] = paper_denoising(space3Dbpf,'paper-2-dwt'); tPaper2DWT = toc;
-% tic;[denoisedPaper2MODWT] = paper_denoising(space3Dbpf,'paper-2-modwt'); tPaper2MODWT = toc;
+tic;[denoisedPaper1Wavelet] = paper_denoising(space3Dbpf,'paper-1-wavelet'); tPaper1Wavelet = toc;
+tic;[denoisedPaper2DWT] = paper_denoising(space3Dbpf,'paper-2-dwt'); tPaper2DWT = toc;
+tic;[denoisedPaper2MODWT] = paper_denoising(space3Dbpf,'paper-2-modwt'); tPaper2MODWT = toc;
+tic;[denoisedSVDwV]  = svd_denoising_rank(space3Dbpf,0); tSVDwV = toc;% wV
+tic;[denoisedSVDwU]  = svd_denoising_rank(space3Dbpf,1); tSVDwU = toc; 
 
 %% get evaluation metrics
 % evalBPF = get_metrics(space3Dbpf,space3Dori,tbpf);
-% evalSVDgamma0 = get_metrics(denoisedSVDgamma0,space3Dori,tSVDgamma0);
+evalSVDgamma0 = get_metrics(denoisedSVDgamma0,space3Dbpf,tSVDgamma0);
 % evalSVDgammahalf = get_metrics(denoisedSVDgammahalf,space3Dori,tSVDgammahalf);
-% evalSVDgamma1 = get_metrics(denoisedSVDgamma1,space3Dori,tSVDgamma1);
+evalSVDgamma1 = get_metrics(denoisedSVDgamma1,space3Dbpf,tSVDgamma1);
 % evalPaper1EMDMI = get_metrics(denoisedPaper1EMDMI,space3Dori,tPaper1EMDMI);
-% evalPaper1Wavelet = get_metrics(denoisedPaper1Wavelet,space3Dori,tPaper1Wavelet);
-% evalPaper2DWT = get_metrics(denoisedPaper2DWT,space3Dori,tPaper2DWT);
-% evalPaper2MODWT = get_metrics(denoisedPaper2MODWT,space3Dori,tPaper2MODWT);
+evalPaper1Wavelet = get_metrics(denoisedPaper1Wavelet,space3Dbpf,tPaper1Wavelet);
+evalPaper2DWT = get_metrics(denoisedPaper2DWT,space3Dbpf,tPaper2DWT);
+evalPaper2MODWT = get_metrics(denoisedPaper2MODWT,space3Dbpf,tPaper2MODWT);
+
+evalSVDwV = get_metrics(denoisedSVDwV,space3Dbpf,tSVDwV);
+evalSVDwU = get_metrics(denoisedSVDwU,space3Dbpf,tSVDwU);
 
 %% save
 %savename = sprintf("complete_comparison_rounded_v3/rounded_eval_%d_%d.mat",dataSNR,idx);
 %save(savename,"-regexp","^SNR","^eval","dataSNR")
+get_metrics(denoisedPaper1Wavelet,space3Dbpf,tSVDwV);
 
-%% calculate C-mode diameter
-organized_show_image(space3Dbpf);
+%% calculate C-mode diameterc
+organized_show_image(denoisedSVDwU);
+%%
 organized_show_image(denoisedSVDgammahalf);
 organized_show_image(denoisedSVDgamma0);
 organized_show_image(denoisedPaper1EMDMI);
@@ -90,9 +98,34 @@ organized_show_image(denoisedPaper1Wavelet);
 % subplot(248);plot(denoisedPaper1EMDMI(:,102,33));title("emd-mi");xlim([0 1024])
 
 %% evaluation function
+function [a] = range(p)
+    a = max(p,[],"all") - min(p,[],'all');
+end
+
+function [a,sd] = pagessim(D,ref)
+    D = abs(hilbert(D));
+    R = abs(hilbert(ref));
+
+    kk = zeros(1,size(D,1));
+    for i=1:size(D,1)
+        Dslice = squeeze(D(i,:,:));
+        Dslice = rescale(Dslice);
+
+        Rslice = squeeze(R(i,:,:));
+        Rslice = rescale(Rslice);
+        kk(i) = ssim(Dslice,Rslice);
+    end
+    figure;plot(kk)
+    a = mean(kk);
+    sd = std(kk);
+end
+
 function [a] = get_metrics(D,ref,timerecord)
     a.cnr = get_cnr(D);
     a.snr = get_snr(D);
+    % [b,c] = pagessim(D,ref);
+    % a.ssim_page = b;
+    % a.ssim_page_sd = c;
     a.ssim_cmode = get_ssim_cmode(D,ref);
     a.psnr_cmode = get_psnr_cmode(D,ref);
     a.time = timerecord;
@@ -133,12 +166,12 @@ function [a] = get_ssim_cmode(D,ref)
     % D
     hb = abs(hilbert(D));
     cmodeD = squeeze(max(hb));
-    cmodeD = (cmodeD - min(cmodeD,[],"all")) / range(cmodeD,'all');
+    cmodeD = (cmodeD - min(cmodeD,[],"all")) / range(cmodeD);
 
     % ref
     hb = abs(hilbert(ref));
     cmodeRef = squeeze(max(hb));
-    cmodeRef = (cmodeRef - min(cmodeRef,[],"all")) / range(cmodeRef,"all");
+    cmodeRef = (cmodeRef - min(cmodeRef,[],"all")) / range(cmodeRef);
 
     a = ssim(cmodeD,cmodeRef);
 end
@@ -147,12 +180,12 @@ function [a] = get_psnr_cmode(D,ref)
     % D
     hb = abs(hilbert(D));
     cmodeD = squeeze(max(hb));
-    cmodeD = (cmodeD - min(cmodeD,[],"all")) / range(cmodeD,'all');
+    cmodeD = (cmodeD - min(cmodeD,[],"all")) / range(cmodeD);
 
     % ref
     hb = abs(hilbert(ref));
     cmodeRef = squeeze(max(hb));
-    cmodeRef = (cmodeRef - min(cmodeRef,[],"all")) / range(cmodeRef,"all");
+    cmodeRef = (cmodeRef - min(cmodeRef,[],"all")) / range(cmodeRef);
 
     a = psnr(cmodeD,cmodeRef);
 end
