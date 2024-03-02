@@ -1,4 +1,4 @@
-clear all 
+ clear all 
 close all
 
 
@@ -20,7 +20,7 @@ h = [zeros(1,(T-l)/2),nshape,zeros(1,(T-l)/2)];
 
 nexttile
 plot(taxis,h,'LineWidth',2,'Color','black');
-axis square
+axis square tight
 xlabel("Time ($\mu$s)",'Interpreter','latex')
 ylabel("Amplitude (a.u.)")
 set(gca,'FontSize',16,'FontName','Times New Roman')
@@ -36,7 +36,7 @@ H = circshift(H,512,2);
 nexttile
 imagesc(taxis,taxis,H);
 xlabel("Time ($\mu$s)",'Interpreter','latex')
-ylabel("Time ($\mu$s)",'Interpreter','latex')
+% ylabel("Time ($\mu$s)",'Interpreter','latex')
 axis image
 set(gca,'FontSize',16,'FontName','Times New Roman')
 title("\it H")
@@ -45,14 +45,11 @@ title("\it H")
 % construct R
 R = zeros(T,N);
 
-% rule 1
-kpctg = 1/T;
-rnd = randperm(T*N,kpctg*T*N);
-R(rnd) = 1;
 
 % rule 2
-rule2 = 1:N;
-R(512,rule2) = 1;
+% rule2 = 1:N;
+rule3 = [1:1000,2000:4000,4500:5000];
+R(512,rule3) = 1;
 
 % rule 3
 % rule3 = randperm(N,1);
@@ -65,21 +62,34 @@ R(512,rule2) = 1;
 % R(800,rule4) = 1;
 
 % rule 5
-rule5 = 1000:2000;
-R(400,rule5) = 1;
+rule1 = 1000:2000;
+R(200,rule1) = 1;
 
 % rule 6
-rule5 = 4000:4500;
-R(800,rule5) = 1;
+rule2 = 4000:4500;
+R(800,rule2) = 1;
+
+Rbefrand = R;
+kpctg = 1/T;
+rnd = randperm(T*N,kpctg*T*N);
+R(rnd) = 1;
 
 nexttile
-imagesc(xaxis,taxis,R);
+% for visualization purpose
+Rvis = Rbefrand;
+for i=1:20
+    Rvis = Rvis + circshift(R,i,1);
+end
+Rvis(rnd) = 1;
+Rvis(Rvis > 1) = 1;
+imagesc(xaxis,taxis,Rvis);
 xlabel(sprintf("Lateral \nPosition (a.u.)"))
-ylabel("Time ($\mu$s)",'Interpreter','latex')
-xticklabels([1000 3000 5000])
+%ylabel("Time ($\mu$s)",'Interpreter','latex')
 axis square
 set(gca,'FontSize',16,'FontName','Times New Roman')
 title("\it R")
+
+
 
 % construct P
 P = H*R;
@@ -88,20 +98,19 @@ nexttile
 imagesc(xaxis,taxis,P);
 xlabel(sprintf("Lateral \nPosition (a.u.)"))
 ylabel("Time ($\mu$s)",'Interpreter','latex')
-xticklabels([1000 3000 5000])
 axis square
 set(gca,'FontSize',16,'FontName','Times New Roman')
 title("\it P")
 %% P only
-figure
-xaxis = 1:size(P,2);
-taxis = (1:size(P,1))*1e6/fs;
-imagesc(xaxis,taxis,P);
-axis square
-xlabel("Lateral Position (a.u.)")
-ylabel("Time ($\mu$s)",'Interpreter','latex')
-set(gca,'FontSize',16,'FontName','Times New Roman')
-title("\it P")
+% figure
+% xaxis = 1:size(P,2);
+% taxis = (1:size(P,1))*1e6/fs;
+% imagesc(xaxis,taxis,P);
+% axis square
+% xlabel("Lateral Position (a.u.)")
+% ylabel("Time ($\mu$s)",'Interpreter','latex')
+% set(gca,'FontSize',16,'FontName','Times New Roman')
+% title("\it P")
 %% compute SVD
 [UP,SP,VP] = svd(P);
 [UH,SH,VH] = svd(H);
@@ -172,28 +181,32 @@ tt = tiledlayout(1,3);
 nexttile
 faxis = (-512:511)*Fs/1024;
 ff = fftshift(1:1024);
-ft = mag2db(abs(fft(UP)));
+ft = (abs(fft(UP)));
 imagesc(1:1024,faxis/1e9,ft(ff,:));hold on
 colormap jet
 axis square
 hcb=colorbar;
-hcb.Title.String = "(dB)";
-clim([-300 0])
+hcb.Title.String = "(a.u.)";
+%clim([-300 0])
 set(gca,'FontSize',16,'FontName','Times New Roman')
 title("$|\mathcal{F} (U_P)|$",'Interpreter', 'LaTeX')
 ylabel("Frequency (GHz)",'FontSize',16,'FontName','Times New Roman')
 
 
-nexttile
+ttt=nexttile;
 faxis = (-512:511)*Fs/1024;
 ff = fftshift(1:1024);
-ft = mag2db(abs(fft(UH)));
-imagesc(1:1024,faxis/1e9,ft(ff,:));hold off
-colormap jet
+ft = (abs(fft(UH)));
+% what if we blurred it?
+ffbraw =ft(ff,:);
+ffbconv = conv2(ffbraw,ones(10,10));
+ffbconv = (ffbconv - min(ffbconv,[],'all'))*max(ffbraw,[],'all') / (max(ffbconv,[],'all') - min(ffbconv,[],'all'));
+imagesc(1:1024,faxis/1e9,ffbconv);hold off
+colormap(ttt,'gray');
 axis square
 hcb=colorbar;
-hcb.Title.String = "(dB)";
-clim([-300 0])
+hcb.Title.String = "(a.u.)";
+%clim([-300 0])
 set(gca,'FontSize',16,'FontName','Times New Roman')
 title("$|\mathcal{F} (U_H)|$",'Interpreter', 'LaTeX')
 ylabel("Frequency (GHz)",'FontSize',16,'FontName','Times New Roman')
@@ -207,10 +220,11 @@ legend('Interpreter','latex','Location','southeast')
 set(gca,'FontSize',16,'FontName','Times New Roman')
 % xlabel('Singular values','FontSize',16,'FontName','Times New Roman')
 ylabel('Energy','FontSize',16,'FontName','Times New Roman')
-
 axis tight square
+ylim([1e-3 inf])
 xlabel(tt,"# Number of singular values",'FontSize',16,'FontName','Times New Roman')
-% axes('position',[.3 .4 .3 .3])
+
+% axes('position',[0.75 0.37 0.1 0.2])
 % box on
 % 
 % tmp = diag(SP);semilogy(tmp(1:20),'DisplayName','$\Sigma_P$','LineWidth',1.2);hold on;
@@ -327,7 +341,7 @@ for ii=1:5
     nexttile
     plot(taxis,UPN(:,ii),'LineStyle','-','LineWidth',1.5,'Color','Black');
     set(gca,'FontSize',16,'FontName','Times New Roman')
-    title(sprintf("U_{%d}",ii),'FontSize',14)
+    title(sprintf("u_{%d}",ii),'FontSize',14)
     axis tight;
 end
 
@@ -464,51 +478,198 @@ for ii = 1:numel(pctgs)
         end
     end
 end
-%%
+%% show implication of PCTGS
 pctgs = linspace(1/N,0.25,10);
 snrs  = linspace(-20,20,10);
-PNP = awgn(P,5);
-[UPN,SPN,VPN] = svd(PNP,'econ');
-[UPNf,SPNf,VPNf] = svd(filtfilt(b,a,PNP),'econ');
+pctgs3 = [pctgs(1), pctgs(end/2), pctgs(end)];
+
+wh = 3;
+seli = randperm(T,wh);
+selj = randperm(N-round(pctgs(end)*N),wh);
 
 figure;
-tt = tiledlayout(1,3);
-
+tiledlayout(1,2)
 nexttile
-faxis = (-512:511)*Fs/1024;
-ff = fftshift(1:1024);
-ft = mag2db(abs(fft(UPN)));
-imagesc(1:1024,faxis/1e9,ft(ff,:));hold off
-hcb=colorbar;
-hcb.Title.String = "(dB)";
-axis square
+
+for ii=1:3
+    R = zeros(T,N);
+    pctg = pctgs3(ii);
+    lateral_length = round(pctg*N); % consecutive length
+    for i=1:wh
+        R(seli(i),selj(i):(selj(i)+lateral_length))=1;
+    end
+    
+    P = H*R;
+    
+    snrval = -5;% in dB
+    % PN = H*awgn(R,snrval);
+    PN = awgn(P,snrval);
+    %PN = awgn(H,snrval)*R;
+    %
+    [UP,~,~] = svds(P,wh);
+    [UPN,~,~] = svds(PN,wh);
+
+    plot(taxis,UPN(:,1),'DisplayName',sprintf("k=%.0f",ceil(pctg*100)),...
+        'LineStyle','-','LineWidth',1.5);hold on
+end
+plot(taxis,UP(:,1),'DisplayName',sprintf("No Noise"),...
+    'LineStyle','-','LineWidth',1.5,'Color','black');hold off
+legend
+
+xlabel('Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
+ylabel('Amplitude','FontSize',16,'FontName','Times New Roman')
 set(gca,'FontSize',16,'FontName','Times New Roman')
-title("$|\mathcal{F} (U_P)|$",'Interpreter', 'LaTeX')
-xlabel("# Number of singular values",'FontSize',16,'FontName','Times New Roman')
-ylabel("Frequency (GHz)",'FontSize',16,'FontName','Times New Roman')
+axis tight square
 
 nexttile
-faxis = (-512:511)*Fs/1024;
-ff = fftshift(1:1024);
-ft = mag2db(abs(fft(UPNf)));
-imagesc(1:1024,faxis/1e9,ft(ff,:));hold off
-hcb=colorbar;
-hcb.Title.String = "(dB)";
-axis square
-set(gca,'FontSize',16,'FontName','Times New Roman')
-title("$|\mathcal{F} (U_{P_{BPF}})|$",'Interpreter', 'LaTeX')
-
-xlabel("# Number of singular values",'FontSize',16,'FontName','Times New Roman')
-ylabel("Frequency (GHz)",'FontSize',16,'FontName','Times New Roman')
-
-nexttile
-imagesc(snrs,pctgs,dat/5);
+imagesc(snrs,ceil(pctgs*100),dat/5);
 xlabel("SNR (dB)")
-ylabel("$k$", Interpreter='latex')
+ylabel("$k\%$", Interpreter='latex')
 set(gca,'FontName','Times','FontSize',16)
 axis square;colormap jet;
 hcb=colorbar;
 hcb.Title.String = "m.s.e";
+
+%% Supp Mat 1
+wh = 3;
+pctg = 0.1;
+% seli = randperm(T,wh);
+% selj = randperm(N-round(pctg*N),wh);
+
+seli = [100,300, 800];
+selj = [1000, 1300, 4653];
+
+
+R = zeros(T,N);
+lateral_length = round(pctg*N); % consecutive length
+for i=1:wh
+    R(seli(i),selj(i):(selj(i)+lateral_length))=1;
+end
+
+P = H*R;
+        
+% PN = H*awgn(R,snrval);
+PN = awgn(P,-5);
+%PN = awgn(H,snrval)*R;
+%
+[UP,~,~] = svds(P,wh);
+[UPN,~,~] = svds(PN,wh);
+
+normUP = normalize(abs(UP),'range');
+
+figure;
+tiledlayout(2,2)
+nexttile
+imagesc(xaxis,taxis,P);
+xlabel(sprintf("Lateral \nPosition (a.u.)"))
+ylabel("Time ($\mu$s)",'Interpreter','latex')
+axis square
+set(gca,'FontSize',16,'FontName','Times New Roman')
+title("\it P")
+nexttile
+imagesc(xaxis,taxis,PN);
+xlabel(sprintf("Lateral \nPosition (a.u.)"))
+ylabel("Time ($\mu$s)",'Interpreter','latex')
+axis square
+set(gca,'FontSize',16,'FontName','Times New Roman')
+title("Noised \it P")
+
+
+
+nexttile
+plot(taxis,UP(:,1),'DisplayName','\it u_1',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UP(:,2),'DisplayName','\it u_2',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UP(:,3),'DisplayName','\it u_3',...
+        'LineStyle','-','LineWidth',1.5);hold off
+xlabel('Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
+ylabel('Amplitude','FontSize',16,'FontName','Times New Roman')
+set(gca,'FontSize',16,'FontName','Times New Roman')
+axis tight square
+
+nexttile
+plot(taxis,UPN(:,1),'DisplayName','\it u_1',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UPN(:,2),'DisplayName','\it u_2',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UPN(:,3),'DisplayName','\it u_3',...
+        'LineStyle','-','LineWidth',1.5);hold off
+xlabel('Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
+ylabel('Amplitude','FontSize',16,'FontName','Times New Roman')
+set(gca,'FontSize',16,'FontName','Times New Roman')
+axis tight square
+legend('Location','eastoutside')
+
+
+%%
+figure
+tiledlayout(1,3)
+
+% level1
+dbval = 5;
+PN = awgn(P,dbval);
+[UPN,~,~] = svds(PN,wh);
+normUPN = normalize(abs(UPN),'range');
+mseval = norm(normUP(:,1:wh)-normUPN(:,1:wh),'fro');
+
+tt = nexttile;
+plot(taxis,UPN(:,1),'DisplayName','\it u_1',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UPN(:,2),'DisplayName','\it u_2',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UPN(:,3),'DisplayName','\it u_3',...
+        'LineStyle','-','LineWidth',1.5);hold off
+xlabel('Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
+ylabel('Amplitude','FontSize',16,'FontName','Times New Roman')
+set(gca,'FontSize',16,'FontName','Times New Roman')
+axis tight square
+% legend('Location','eastoutside')
+title(tt,sprintf('SNR: %d dB, MSE: %.2f',dbval,mseval))
+
+% level2
+dbval = -7;
+PN = awgn(P,dbval);
+[UPN,~,~] = svds(PN,wh);
+normUPN = normalize(abs(UPN),'range');
+mseval = norm(normUP(:,1:wh)-normUPN(:,1:wh),'fro');
+
+tt = nexttile;
+plot(taxis,UPN(:,1),'DisplayName','\it u_1',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UPN(:,2),'DisplayName','\it u_2',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UPN(:,3),'DisplayName','\it u_3',...
+        'LineStyle','-','LineWidth',1.5);hold off
+xlabel('Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
+ylabel('Amplitude','FontSize',16,'FontName','Times New Roman')
+set(gca,'FontSize',16,'FontName','Times New Roman')
+axis tight square
+% legend('Location','eastoutside')
+title(tt,sprintf('SNR: %d dB, MSE: %.2f',dbval,mseval))
+
+% level3
+dbval=-15;
+PN = awgn(P,dbval);
+[UPN,~,~] = svds(PN,wh);
+normUPN = normalize(abs(UPN),'range');
+mseval = norm(normUP(:,1:wh)-normUPN(:,1:wh),'fro');
+
+tt = nexttile;
+plot(taxis,UPN(:,1),'DisplayName','\it u_1',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UPN(:,2),'DisplayName','\it u_2',...
+        'LineStyle','-','LineWidth',1.5);hold on
+plot(taxis,UPN(:,3),'DisplayName','\it u_3',...
+        'LineStyle','-','LineWidth',1.5);hold off
+xlabel('Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
+ylabel('Amplitude','FontSize',16,'FontName','Times New Roman')
+set(gca,'FontSize',16,'FontName','Times New Roman')
+axis tight square
+lg = legend('Orientation','horizontal');
+title(tt,sprintf('SNR: %d dB, MSE: %.2f',dbval,mseval))
+
+lg.Layout.Tile = 'South'; % <-- place legend east of tiles
 %% make sure the awgn works correctly
 ns = awgn(zeros(1,T),0);
 figure;
