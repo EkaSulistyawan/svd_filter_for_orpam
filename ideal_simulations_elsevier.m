@@ -62,14 +62,14 @@ R = zeros(T,N);
 % R(800,rule4) = 1;
 
 % rule 5
-rule1 = 1000:3000;
+rule1 = 1000:3000; % 40
 R(200,rule1) = 1;
 
 % rule 6
-rule2 = 4200:4500;
+rule2 = 4200:4500;  %6
 R(800,rule2) = 1;
 
-rule3 = 100:150;
+rule3 = 100:150; % 1
 R(500,rule3) = 1;
 
 Rbefrand = R;
@@ -108,10 +108,6 @@ title("\it P")
 [UP,SP,VP] = svd(P);
 [UH,SH,VH] = svd(H);
 [UR,SR,VR] = svd(R);
-
-
-
-
 
 
 %% simul spat dist
@@ -193,6 +189,8 @@ Pxi = awgn(Pxi,0);
 
 
 [up,sp,vp] = svd(P,'econ');
+[uh,sh,vh] = svd(H,'econ');
+[ur,sr,vr] = svd(R,'econ');
 [upxi,spxi,vpxi] = svd(Pxi,'econ');
 
 figure
@@ -219,11 +217,12 @@ title("$\it{P}+\xi+\eta$",'Interpreter','latex')
 
 
 tt3 = nexttile;
-alp = 0.3;
-colorset=[[1 0 0 alp];[0 0 0 alp];[0 0 1 alp]];
-for i=1:3
-    %plot(up(:,i),'LineStyle','-','LineWidth',1.5,'Color','Black','DisplayName','H U_R');hold on
+alp = 0.1;
+colorset=[[1 0 0 alp];[0 0 0 alp];[0 0 1 alp];[0 1 0 alp]];
+for i=1:4
     plot(tt3,taxis,upxi(:,i),'LineStyle','-','LineWidth',1.5,'Color',colorset(i,:),'DisplayName',sprintf("#%d",i));hold on
+    %plot(tt3,taxis,up(:,i),'LineStyle',':','LineWidth',1.5,'Color',colorset(i,:),'HandleVisibility','off');hold on
+    
     axis square tight
     set(gca,'FontSize',fntsz,'FontName','Times New Roman')
 end
@@ -232,24 +231,123 @@ legend('Orientation','horizontal','location','south')
 title('$U_{\it{P}+\xi+\eta}$','Interpreter','Latex')
 
 tt4 = nexttile;
-% use the 3 consecutive position
-load("experiment28022024.mat",'dat');
-pctgs = linspace(1/N,0.25,10);
-snrs  = linspace(-20,20,10);
-imagesc(snrs,ceil(pctgs*100),dat/5);
-colormap(tt4,'jet')
-xlabel("SNR (dB)")
-ylabel("$k\%$", Interpreter='latex')
-set(gca,'FontName','Times','FontSize',fntsz)
-axis square;
-hcb=colorbar;
-hcb.Title.String = "m.s.e";
-title('MSE of $U_{\it{P}+\eta}$','Interpreter','Latex')
+% % use the 3 consecutive position
+% load("experiment28022024.mat",'dat');
+% pctgs = linspace(1/N,0.25,10);
+% snrs  = linspace(-20,20,10);
+% imagesc(snrs,ceil(pctgs*100),dat/5);
+% colormap(tt4,'jet')
+% xlabel("SNR (dB)")
+% ylabel("$k\%$", Interpreter='latex')
+% set(gca,'FontName','Times','FontSize',fntsz)
+% axis square;
+% hcb=colorbar;
+% hcb.Title.String = "m.s.e";
+% title('MSE of $U_{\it{P}+\eta}$','Interpreter','Latex')
+
+% if show singular vectors
+semilogy(diag(sp),'DisplayName','$\Sigma_P$','LineWidth',1.5);hold on;
+semilogy(diag(spxi),'DisplayName','$\Sigma_{P+\xi+\eta}$','LineWidth',1.5);hold on;
+semilogy(diag(sh),'DisplayName','$\Sigma_H$','LineWidth',1.5);hold on;
+semilogy(diag(sr),'DisplayName','$\Sigma_R$','LineWidth',1.5);hold off;
+legend('Interpreter','latex','Location','southeast')
+set(gca,'FontSize',fntsz,'FontName','Times New Roman')
+% xlabel('Singular values','FontSize',16,'FontName','Times New Roman')
+ylabel('Energy','FontSize',fntsz,'FontName','Times New Roman')
+axis tight square
+% ylim([1e-3 inf])
+xlabel("# Number of singular values",'FontSize',fntsz,'FontName','Times New Roman')
 
 
 annotation('textbox',[0.1 0.1 0.1 0.1],'String','$k=6\%$','EdgeColor','none','FontSize',fntsz,'FontName','Times','Color','green','Interpreter','latex')
 annotation('textbox',[0.1 0.1 0.1 0.1],'String','$\xi$','EdgeColor','none','FontSize',fntsz,'FontName','Times','Color','green','Interpreter','latex')
 
+%% make six arrangement
+fntsz = 14;
+figure;
+T = tiledlayout(2,3,'TileSpacing','tight');
+
+% first column
+tt = tiledlayout(T,2,1);
+tt.Layout.Tile = 1;
+tt.Layout.TileSpan = [2 1];
+
+tt1 = nexttile(tt);
+imagesc(xaxis,taxis,P);
+colormap(tt1,'gray')
+axis square tight
+set(gca,'FontSize',fntsz,'FontName','Times New Roman')
+set(gca,'XTick',[1000 3000 5000])
+title("$\it{P}$",'Interpreter','latex')
+
+tt1 = nexttile(tt);
+imagesc(xaxis,taxis,Pxi); hold on
+plot(sine2(:,1)*100+200,sine2(:,2)+taxis(end),'LineWidth',1.5,'Color','green'); hold off
+colormap(tt1,'gray')
+set(gca,'XTick',[1000 3000 5000])
+axis square tight
+set(gca,'FontSize',fntsz,'FontName','Times New Roman')
+title("$\it{P}+\xi+\eta$",'Interpreter','latex')
+
+xlabel(tt,sprintf("Lateral \nPosition (a.u.)"),'FontSize',fntsz,'FontName','Times New Roman')
+ylabel(tt,"Time ($\mu$s)",'Interpreter','latex','FontSize',fntsz,'FontName','Times New Roman')
+
+% plot 2
+tt = tiledlayout(T,2,1);
+tt.Layout.Tile = 2;
+tt.Layout.TileSpan = [2 1];
+
+tt3 = nexttile(tt);
+alp = 0.3;
+colorset=[[1 0 0 alp];[0 0 0 alp];[0 0 1 alp];[0 1 0 alp]];
+for ii=1:4
+    i = 5-ii;
+    plot(tt3,taxis,up(:,i),'LineStyle','-','LineWidth',1.5,'Color',colorset(i,:),'DisplayName',sprintf("#%d",i));hold on
+    
+    axis square tight
+    set(gca,'FontSize',fntsz,'FontName','Times New Roman')
+end
+title('$U_{P}$','Interpreter','Latex')
+
+tt3 = nexttile(tt);
+colorset=[[1 0 0 alp];[0 0 0 alp];[0 0 1 alp];[0 1 0 alp]];
+for ii=1:4
+    i = 5-ii;
+    plot(tt3,taxis,upxi(:,i),'LineStyle','-','LineWidth',1.5,'Color',colorset(i,:),'DisplayName',sprintf("#%d",i));hold on
+    
+    axis square tight
+    set(gca,'FontSize',fntsz,'FontName','Times New Roman')
+end
+ylabel(tt,"Amplitude (a.u.)",'Interpreter','latex','FontSize',fntsz,'FontName','Times New Roman')
+xlabel(tt,"Time ($\mu$s)",'Interpreter','latex','FontSize',fntsz,'FontName','Times New Roman')
+title('$U_{\it{P}+\xi+\eta}$','Interpreter','Latex')
+
+lgd = legend('Orientation','vertical','FontSize',12,'FontName','Times New Roman');
+lgd.Layout.Tile = 'east';
+
+% third
+tt = tiledlayout(T,1,1);
+tt.Layout.Tile = 3;
+tt.Layout.TileSpan = [1 1];
+
+nexttile(tt)
+% if show singular vectors
+semilogy(diag(sp),'DisplayName','$\Sigma_P$','LineWidth',1.5);hold on;
+semilogy(diag(spxi),'DisplayName','$\Sigma_{P+\xi+\eta}$','LineWidth',1.5);hold on;
+semilogy(diag(sh),'DisplayName','$\Sigma_H$','LineWidth',1.5);hold on;
+semilogy(diag(sr),'DisplayName','$\Sigma_R$','LineWidth',1.5);hold off;
+legend('Interpreter','latex','Location','southeast')
+set(gca,'FontSize',fntsz,'FontName','Times New Roman')
+% xlabel('Singular values','FontSize',16,'FontName','Times New Roman')
+ylabel('Energy','FontSize',fntsz,'FontName','Times New Roman')
+axis tight square
+xlim([1 100])
+xlabel("# Number of singular values",'FontSize',fntsz,'FontName','Times New Roman')
+
+annotation('textbox',[0.1 0.1 0.1 0.1],'String','$k=1\%$','EdgeColor','none','FontSize',fntsz,'FontName','Times','Color','green','Interpreter','latex')
+annotation('textbox',[0.1 0.1 0.1 0.1],'String','$k=6\%$','EdgeColor','none','FontSize',fntsz,'FontName','Times','Color','green','Interpreter','latex')
+annotation('textbox',[0.1 0.1 0.1 0.1],'String','$k=40\%$','EdgeColor','none','FontSize',fntsz,'FontName','Times','Color','green','Interpreter','latex')
+annotation('textbox',[0.1 0.1 0.1 0.1],'String','$\xi$','EdgeColor','none','FontSize',fntsz,'FontName','Times','Color','green','Interpreter','latex')
 %% make sure the awgn works correctly
 ns = awgn(zeros(1,T),0);
 figure;
