@@ -13,9 +13,9 @@ tiledlayout(1,4);
 nshape = linspace(0.5,-0.5,l);
 h = [zeros(1,(T-l)/2),nshape,zeros(1,(T-l)/2)];
 
-fs = 5e9;
-[b,a] = butter(4,[10e6 100e6] / (fs/2),'bandpass');
-h = filtfilt(b,a,h);
+% fs = 5e9;
+% [b,a] = butter(4,[10e6 100e6] / (fs/2),'bandpass');
+% h = filtfilt(b,a,h);
 
 nexttile
 plot(1:T,h,'LineWidth',2,'Color','black');
@@ -41,9 +41,9 @@ title("\it H")
 R = zeros(T,N);
 
 % rule 1
-% kpctg = 1/T;
-% rnd = randperm(T*N,kpctg*T*N);
-% R(rnd) = 1;
+kpctg = 1/T;
+rnd = randperm(T*N,kpctg*T*N);
+R(rnd) = 1;
 
 % rule 2
 rule2 = 1:N;
@@ -103,7 +103,7 @@ for i=1:fewranks
     set(gca,'FontSize',16,'FontName','Times New Roman')
     title(sprintf("Singular Vector #%d",i),'FontSize',14)
 end
-leg = legend('Orientation', 'Horizontal','FontSize',14);
+%leg = legend('Orientation', 'Horizontal','FontSize',14);
 
 %% Proof 2 relation UP and UH
 
@@ -132,15 +132,15 @@ figure;
 tiledlayout(1,fewranks)
 for sel =1:fewranks
     nexttile
-    plot(conv(abs(eq5b(:,sel)),mav),'Color',[0 0 0 0.2],'DisplayName','$R^T V_H$','LineWidth',1.5);hold on
-    plot(conv(abs(VR(:,sel)),mav),'Color',[1 0 1 0.2],'DisplayName','$V_R$','LineWidth',1.5);hold on
-    plot(conv(abs(VP(:,sel)),mav),'Color',[1 0 0 0.2],'DisplayName','$V_P$','LineWidth',1.5);hold off
+    %plot(conv(abs(eq5b(:,sel)),mav),'Color',[0 0 0 0.2],'DisplayName','$R^T V_H$','LineWidth',1.5);hold on
+    plot(conv(abs(VR(:,sel)),mav),'Color',[0 0 0 0.8],'DisplayName','$V_R$','LineWidth',1.5);hold on
+    plot(conv(abs(VP(:,sel)),mav),'Color',[1 0 0 0.8],'DisplayName','$V_P$','LineWidth',1.5);hold off
     set(gca,'FontSize',16,'FontName','Times New Roman')
     axis square tight
     ylim([0 1])
 end
-legend('Interpreter', 'LaTeX')
-leg = legend('Orientation', 'Horizontal','FontSize',14);
+% legend('Interpreter', 'LaTeX')
+% leg = legend('Orientation', 'Horizontal','FontSize',14);
 
 %% sigma
 figure;
@@ -157,6 +157,21 @@ box on
 tmp = diag(SP);semilogy(tmp(1:20),'DisplayName','$\Sigma_P$','LineWidth',1.2);hold on;
 tmp = diag(SH);semilogy(tmp(1:20),'DisplayName','$\Sigma_H$','LineWidth',1.2);hold on;
 tmp = diag(SR);semilogy(tmp(1:20),'DisplayName','$\Sigma_R$','LineWidth',1.2);hold off;
+set(gca,'FontSize',12,'FontName','Times New Roman')
+
+%% sigma 2
+figure;
+semilogy(diag(SP),'DisplayName','$\Sigma_P$','LineWidth',1.5);hold on;
+semilogy(diag(SH).*diag(SR),'DisplayName','$\Sigma_H \Sigma_R$','LineWidth',1.5);hold off;
+legend('Interpreter','latex','Location','southeast')
+set(gca,'FontSize',16,'FontName','Times New Roman')
+axis tight square
+
+axes('position',[.3 .4 .3 .3])
+box on
+
+tmp = diag(SP);semilogy(tmp(1:20),'DisplayName','$\Sigma_P$','LineWidth',1.2);hold on;
+tmp = diag(SR).*diag(SH);semilogy(tmp(1:20),'DisplayName','$\Sigma_H \Sigma_R$','LineWidth',1.2);hold off;
 set(gca,'FontSize',12,'FontName','Times New Roman')
 
 %% recover R from H
@@ -179,7 +194,7 @@ VR2 = VP(:,1:3);
 urec = real(ifft(uf));
 kk = real(ifft(uf*sf*vf'));
 
-%% effect of noise
+%% effect of noise to P
 fth = mag2db(abs(fft(h)));
 signal_level = max(fth);
 
@@ -204,8 +219,9 @@ noised = awgn(P,-10);
 figure;plot(UN(:,1:1))
 figure;imagesc(noised)
 
-%% add noise to R
-PN = H*awgn(R,20);
+
+%% add noise to H
+PN = awgn(H,20)*R;
 [UN,SN,VN] = svd(PN);
 figure;plot(UN(:,1:3))
 figure;
@@ -219,5 +235,102 @@ figure;
 tiledlayout(1,2)
 nexttile
 imagesc(abs(fft(UP)));axis square
+
 nexttile
 imagesc(abs(fft(UN)));axis square
+
+%% add noise to R
+PN = H*awgn(R,10);
+[UN,SN,VN] = svd(PN);
+figure;plot(UN(:,1:3))
+figure;
+tiledlayout(1,2)
+nexttile
+imagesc(P);axis square
+nexttile
+imagesc(PN);axis square
+
+figure;
+tiledlayout(1,2)
+nexttile
+imagesc(abs(fft(UP)));axis square
+
+nexttile
+imagesc(abs(fft(UN)));axis square
+
+%%
+figure;
+tiledlayout(1,2)
+
+%% study of R
+% close all
+% since R holds the strongest influence towards the SVD, we may consider
+% how R should be constructed when noise or inhomogenousity existed.
+
+% at its extreme, the signal is at the same level as the inhomogenousity.
+% Ofc in this case, we can only rely on spatial coherence.
+
+pctgs = linspace(0.05,0.1,10);
+nsadds = linspace(0,15,10);
+
+dat = zeros(numel(pctgs),numel(nsadds));
+
+colnum = 1000;
+
+for i = 1:numel(pctgs)
+    for j = 1:numel(nsadds)
+        pctg = pctgs(i);
+        nsadd = nsadds(j);
+        % new R
+        sglv = 1;
+        R2 = zeros(1024,colnum);
+        % pctg = 0.05;
+        % R2(512,1:round(pctg*colnum)) = sglv;
+        R2(512,randperm(colnum,round(pctg*colnum))) = sglv;
+        % R2(10,randperm(5000,100)) = 1;
+        % R2(100,randperm(5000,round(pctg*5000))) = sglv;
+        
+        
+        % old R
+        %R2 = R;
+        snrlv = -10*log(sglv)+nsadd;
+        Rn = awgn(R2,snrlv);
+        % fprintf("Rank Noised %d\n",rank(Rn))
+        % [UR,SR,VR] = svd(R2);
+        [URn,SRn,VRn] = svd(Rn,'econ');
+        
+        Un = URn(:,1);
+        Un(512) = 0;
+        varnoise = std(Un);
+        significantEnergy = URn(512,1) - varnoise;
+
+        dat(i,j) = significantEnergy;
+    end
+end
+
+figure;
+imagesc(nsadds,pctgs,abs(dat));
+axis square;colormap jet;
+colorbar
+set(gca,'FontSize',20)
+clim([0 1])
+xlabel("SNR")
+ylabel("% Number of Absorber")
+
+% figure;
+%semilogy(diag(SR),'DisplayName','R');hold on
+% semilogy(diag(SRn),'DisplayName',sprintf('R noisy. Signal level %d dB',snrlv));hold on
+% legend
+% axis tight
+
+% % figure;
+% plot(URn(:,1)); hold on
+% axis tight
+% 
+% figure;imagesc(Rn*Rn');axis square;colormap gray
+% figure;imagesc(Rn'*Rn);axis square;colormap gray
+
+% figure;plot(diag(Rn*Rn'));axis tight;colormap gray
+% figure;plot(diag(Rn'*Rn));axis tight;colormap gray
+% what are noise level? 
+

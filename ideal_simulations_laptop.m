@@ -1,4 +1,4 @@
- clear all 
+clear all 
 close all
 
 
@@ -98,6 +98,7 @@ nexttile
 imagesc(xaxis,taxis,P);
 xlabel(sprintf("Lateral \nPosition (a.u.)"))
 ylabel("Time ($\mu$s)",'Interpreter','latex')
+colormap gray
 axis square
 set(gca,'FontSize',16,'FontName','Times New Roman')
 title("\it P")
@@ -143,10 +144,11 @@ ttt = tiledlayout(tt,1,4);
 ttt.Layout.Tile = 1;
 for i=1:fewranks
     nexttile(ttt)
-    plot(taxis,gt(:,i),'LineStyle','-','LineWidth',1.5,'Color','Red','DisplayName','$U_P$');hold on
-    plot(taxis,eq5a(:,i),'LineStyle','-','LineWidth',1.5,'Color','Black','DisplayName','$H U_R$');hold off
+    plot(taxis,gt(:,i),'LineStyle','-','LineWidth',3,'Color','Red','DisplayName','$U_P$');hold on
+    plot(taxis,eq5a(:,i),'LineStyle','-','LineWidth',3,'Color','Black','DisplayName','$H U_R$');hold off
     axis square
     set(gca,'FontSize',16,'FontName','Times New Roman')
+    ylim([-0.5 0.5])
     title(sprintf("#%d",i),'FontSize',14)
 end
 xlabel(ttt,'Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
@@ -161,10 +163,10 @@ ttt.Layout.Tile = 2;
 for sel =1:fewranks
     nexttile(ttt)
     %plot(conv(abs(eq5b(:,sel)),mav),'Color',[0 0 0 0.2],'DisplayName','$R^T V_H$','LineWidth',1.5);hold on
-    plot(conv(abs(VP(:,sel)),mav),'Color',[1 0 0 0.7],'DisplayName','$V_P$','LineWidth',1.5);hold on
-    plot(conv(abs(VR(:,sel)),mav),'Color',[0 0 0 0.7],'DisplayName','$V_R$','LineWidth',1.5);hold off
+    plot(conv(abs(VP(:,sel)),mav),'Color',[1 0 0 0.7],'DisplayName','$V_P$','LineWidth',3);hold on
+    plot(conv(abs(VR(:,sel)),mav),'Color',[0 0 0 0.7],'DisplayName','$V_R$','LineWidth',3);hold off
     
-    set(gca,'FontSize',16,'FontName','Times New Roman')
+    set(gca,'Xtick',[1000,3000,5000],'Xticklabels',[1000,3000,5000],'FontSize',16,'FontName','Times New Roman')
     axis square tight
     ylim([0 1])
 end
@@ -201,6 +203,7 @@ ft = (abs(fft(UH)));
 ffbraw =ft(ff,:);
 ffbconv = conv2(ffbraw,ones(10,10));
 ffbconv = (ffbconv - min(ffbconv,[],'all'))*max(ffbraw,[],'all') / (max(ffbconv,[],'all') - min(ffbconv,[],'all'));
+ffbconv(ffbconv > 5) = max(ffbraw,[],'all');
 imagesc(1:1024,faxis/1e9,ffbconv);hold off
 colormap(ttt,'gray');
 axis square
@@ -522,6 +525,17 @@ set(gca,'FontSize',16,'FontName','Times New Roman')
 axis tight square
 
 nexttile
+
+imagesc(snrs,ceil(pctgs*100),dat/5);
+xlabel("SNR (dB)")
+ylabel("$k\%$", Interpreter='latex')
+set(gca,'FontName','Times','FontSize',16)
+axis square;colormap jet;
+hcb=colorbar;
+hcb.Title.String = "m.s.e";
+
+%%
+figure;
 imagesc(snrs,ceil(pctgs*100),dat/5);
 xlabel("SNR (dB)")
 ylabel("$k\%$", Interpreter='latex')
@@ -536,8 +550,11 @@ pctg = 0.1;
 % seli = randperm(T,wh);
 % selj = randperm(N-round(pctg*N),wh);
 
-seli = [100,300, 800];
-selj = [1000, 1300, 4653];
+% seli = [100,300, 800];
+% selj = [1000, 1300, 4653];
+
+seli = [200, 500, 800];
+selj = [2000,100,4200];
 
 
 R = zeros(T,N);
@@ -605,21 +622,23 @@ legend('Location','eastoutside')
 %%
 figure
 tiledlayout(1,3)
+alp = 0.4;
+colorset=[[0 0 0 alp];[1 0 0 alp];[0 0 1 alp];[1 0 1 alp]];
 
 % level1
-dbval = 5;
+dbval = 20;
 PN = awgn(P,dbval);
 [UPN,~,~] = svds(PN,wh);
 normUPN = normalize(abs(UPN),'range');
 mseval = norm(normUP(:,1:wh)-normUPN(:,1:wh),'fro');
 
 tt = nexttile;
-plot(taxis,UPN(:,1),'DisplayName','\it u_1',...
-        'LineStyle','-','LineWidth',1.5);hold on
-plot(taxis,UPN(:,2),'DisplayName','\it u_2',...
-        'LineStyle','-','LineWidth',1.5);hold on
-plot(taxis,UPN(:,3),'DisplayName','\it u_3',...
-        'LineStyle','-','LineWidth',1.5);hold off
+plot(taxis,UPN(:,1),'DisplayName','\it U_1',...
+        'LineStyle','-','LineWidth',3,'Color',colorset(1,:));hold on
+plot(taxis,UPN(:,2),'DisplayName','\it U_2',...
+        'LineStyle','-','LineWidth',3,'Color',colorset(2,:));hold on
+plot(taxis,UPN(:,3),'DisplayName','\it U_3',...
+        'LineStyle','-','LineWidth',3,'Color',colorset(3,:));hold off
 xlabel('Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
 ylabel('Amplitude','FontSize',16,'FontName','Times New Roman')
 set(gca,'FontSize',16,'FontName','Times New Roman')
@@ -628,19 +647,19 @@ axis tight square
 title(tt,sprintf('SNR: %d dB, MSE: %.2f',dbval,mseval))
 
 % level2
-dbval = -7;
+dbval = 0;
 PN = awgn(P,dbval);
 [UPN,~,~] = svds(PN,wh);
 normUPN = normalize(abs(UPN),'range');
 mseval = norm(normUP(:,1:wh)-normUPN(:,1:wh),'fro');
 
 tt = nexttile;
-plot(taxis,UPN(:,1),'DisplayName','\it u_1',...
-        'LineStyle','-','LineWidth',1.5);hold on
-plot(taxis,UPN(:,2),'DisplayName','\it u_2',...
-        'LineStyle','-','LineWidth',1.5);hold on
-plot(taxis,UPN(:,3),'DisplayName','\it u_3',...
-        'LineStyle','-','LineWidth',1.5);hold off
+plot(taxis,UPN(:,1),'DisplayName','\it U_1',...
+        'LineStyle','-','LineWidth',3,'Color',colorset(1,:));hold on
+plot(taxis,UPN(:,2),'DisplayName','\it U_2',...
+        'LineStyle','-','LineWidth',3,'Color',colorset(2,:));hold on
+plot(taxis,UPN(:,3),'DisplayName','\it U_3',...
+        'LineStyle','-','LineWidth',3,'Color',colorset(3,:));hold off
 xlabel('Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
 ylabel('Amplitude','FontSize',16,'FontName','Times New Roman')
 set(gca,'FontSize',16,'FontName','Times New Roman')
@@ -656,12 +675,12 @@ normUPN = normalize(abs(UPN),'range');
 mseval = norm(normUP(:,1:wh)-normUPN(:,1:wh),'fro');
 
 tt = nexttile;
-plot(taxis,UPN(:,1),'DisplayName','\it u_1',...
-        'LineStyle','-','LineWidth',1.5);hold on
-plot(taxis,UPN(:,2),'DisplayName','\it u_2',...
-        'LineStyle','-','LineWidth',1.5);hold on
-plot(taxis,UPN(:,3),'DisplayName','\it u_3',...
-        'LineStyle','-','LineWidth',1.5);hold off
+plot(taxis,UPN(:,1),'DisplayName','\it U_1',...
+        'LineStyle','-','LineWidth',3,'Color',colorset(1,:));hold on
+plot(taxis,UPN(:,2),'DisplayName','\it U_2',...
+        'LineStyle','-','LineWidth',3,'Color',colorset(2,:));hold on
+plot(taxis,UPN(:,3),'DisplayName','\it U_3',...
+        'LineStyle','-','LineWidth',3,'Color',colorset(3,:));hold off
 xlabel('Time ($\mu$s)','Interpreter','latex','FontSize',16,'FontName','Times New Roman')
 ylabel('Amplitude','FontSize',16,'FontName','Times New Roman')
 set(gca,'FontSize',16,'FontName','Times New Roman')
