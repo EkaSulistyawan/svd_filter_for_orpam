@@ -1,6 +1,10 @@
 %% synthetic noise
 dat = load("C:\Users\Eka\Documents\SharingPoint\data\cellular\compiled\04092023_USAF.mat").space3D;
 dat = dat(:,1:size(dat,2)-1,1:size(dat,2)-1);
+imsz = size(dat,2);
+
+cmode = squeeze(max(abs(hilbert(dat))));
+figure;imagesc((cmode));axis image off;colormap hot
 
 % 45 ~ 1 dB SNR
 % 60 ~ 10 dB SNR
@@ -9,7 +13,7 @@ valsnr = get_snr(datns,'Flat');
 [b,a] = butter(4,[10e6 100e6] / (Fs/2),'bandpass');
 space3Dbpf = filtfilt(b,a,datns);
 
-[res] = svd_denoising_ius(space3Dbpf,0);
+dat2d = reshape(space3Dbpf,1024,imsz*imsz);
 
 
 %% Other analysis
@@ -45,6 +49,7 @@ for ii=39:41
     ref(:,ii,46) = ref(:,ii,50);
 end
 
+
 Fs = 5e9;
 [b,a] = butter(4,[10e6 100e6] / (Fs/2),'bandpass');
 space3Dbpf = filtfilt(b,a,dat);
@@ -57,14 +62,229 @@ refbpf = filtfilt(b,a,ref);
 cmode = squeeze(max(abs(hilbert(refbpf))));
 figure;imagesc((cmode));axis image off;colormap hot
 
-%% signal at brightest RBC
-sig = space3Dbpf(:,137,115);
-plot(sig)
+%% synthetic noise
+close all
+
+refns = awgn(ref,65);
+Fs = 5e9;
+[b,a] = butter(4,[10e6 100e6] / (Fs/2),'bandpass');
+refnsbpf = filtfilt(b,a,refns);
+%
+[snrr0ori,cnrr0ori] = get_metrics(refbpf,'RBC');
+%%
+[snrr1bpf,cnrr1bpf] = get_metrics(refnsbpf,'RBC');
+cmodebpf = squeeze(max(abs(hilbert(refnsbpf))));
+figure;imagesc((cmodebpf));axis image off;colormap hot
+
+figure(Position=[651,689,560,214])
+plot(refns(:,137,116),DisplayName='wo BPF',Color=[.5, .5, .5],LineWidth=2);hold on
+plot(refnsbpf(:,137,116),DisplayName='w BPF',Color='r',LineWidth=2);hold off
 axis tight
+% xlabel('Time (ns)')
+% ylabel('Norm. Intensity (a.u.)')
+ylim([-2e-3, 2e-3])
+xticklabels([])
+yticklabels([])
+
+%
+paper1emd = paper_denoising(refnsbpf, "paper-1-emd-mi");
+[snrr2emd,cnrr2emd] = get_metrics(paper1emd,'RBC');
+cmodeemd = squeeze(max(abs(hilbert(paper1emd))));
+figure;imagesc((cmodeemd));axis image off;colormap hot
+
+%
+paper2mowv = paper_denoising(refnsbpf, "paper-2-modwt");
+[snrr3modwt,cnrr3modwt] = get_metrics(paper2mowv,'RBC');
+cmodemodwt = squeeze(max(abs(hilbert(paper2mowv))));
+figure;imagesc((cmodemodwt));axis image off;colormap hot
+
+%
+[ours,~,~,weight] = svd_denoising_ius(refnsbpf,0);
+[snrr4ours,cnrr4ours] = get_metrics(ours,'RBC');
+cmodeours = squeeze(max(abs(hilbert(ours))));
+figure;imagesc((cmodeours));axis image off;colormap hot
 
 %%
-emd(sig)
+[snrr5bpfnoavg,cnrr5bpfnoavg] = get_metrics(space3Dbpf,'RBC');
 
+%% test paper denoising
+% sig = dat(:,137,116);
+% sigbpf = space3Dbpf(:,137,116);
+paper1emd = paper_denoising(dat, "paper-1-emd-mi");
+% paper1wv = paper_denoising(dat, "paper-1-wavelet");
+% paper2wv = paper_denoising(dat, "paper-2-dwt");
+paper2mowv = paper_denoising(dat, "paper-2-modwt");
+[ours,~,wvnorm,weight]=svd_denoising_ius(space3Dbpf);
+
+%%
+s = svd(reshape(space3Dbpf,1024,200*200),'econ','vector');
+loglog(s,LineWidth=5);hold on
+loglog(wvnorm,LineWidth=3,Color=[0, 1, 0, 0.8]);hold on
+xline(3,linestyle='--',LineWidth=3);hold off
+grid on
+axis square
+xticks([3])
+ylim([1e-3, 1])
+set(gca,'FontName','Aptos','FontSize',20)
+
+
+%%
+figure;imagesc(squeeze(max(abs(hilbert(space3Dbpf)))));axis image off;colormap hot
+
+%%
+[a,b] = get_metrics(space3Dbpf,'RBC');
+%% signal at brightest RBC
+close all
+% figure(Position=[651,689,560,214])
+figure(Position=[438,602,765,214])
+plot(refbpf(:,137,116),DisplayName='Signal',Color=[0.0 0.5 0.0],LineWidth=2);hold on
+plot(refbpf(:,65,31),DisplayName='Noise',Color=[1.0 0.0 0.5],LineWidth=2);hold on
+axis tight
+% xlabel('Time (ns)')
+% ylabel('Norm. Intensity (a.u.)')
+ylim([-1e-3, 1e-3])
+xticklabels([])
+yticklabels([])
+set(gca,'FontName','Aptos','FontSize',15)
+% legend
+
+% figure(Position=[651,689,560,214])
+figure(Position=[438,602,765,214])
+plot(space3Dbpf(:,137,116),DisplayName='Signal',Color=[0.0 0.5 0.0],LineWidth=2);hold on
+plot(space3Dbpf(:,65,31),DisplayName='Noise',Color=[1.0 0.0 0.5],LineWidth=2);hold on
+axis tight
+% xlabel('Time (ns)')
+% ylabel('Norm. Intensity (a.u.)')
+ylim([-1e-3, 1e-3])
+xticklabels([])
+yticklabels([])
+set(gca,'FontName','Aptos','FontSize',15)
+% legend
+
+% figure(Position=[651,689,560,214])
+figure(Position=[438,602,765,214])
+plot(paper1emd(:,137,116),DisplayName='Signal',Color=[0.0 0.5 0.0],LineWidth=2);hold on
+plot(paper1emd(:,65,31),DisplayName='Noise',Color=[1.0 0.0 0.5],LineWidth=2);hold on
+axis tight
+% xlabel('Time (ns)')
+% ylabel('Norm. Intensity (a.u.)')
+ylim([-1e-3, 1e-3])
+xticklabels([])
+yticklabels([])
+set(gca,'FontName','Aptos','FontSize',15)
+% legend
+
+% figure(Position=[651,689,560,214])
+figure(Position=[438,602,765,214])
+plot(paper2mowv(:,137,116),DisplayName='Signal',Color=[0.0 0.5 0.0],LineWidth=2);hold on
+plot(paper2mowv(:,65,31),DisplayName='Noise',Color=[1.0 0.0 0.5],LineWidth=2);hold on
+axis tight
+% xlabel('Time (ns)')
+% ylabel('Norm. Intensity (a.u.)')
+ylim([-1e-3, 1e-3])
+xticklabels([])
+yticklabels([])
+set(gca,'FontName','Aptos','FontSize',15)
+% legend
+
+% figure(Position=[651,689,560,214])
+figure(Position=[438,602,765,214])
+plot(ours(:,137,116),DisplayName='Signal',Color=[0.0 0.5 0.0],LineWidth=2);hold on
+plot(ours(:,65,31),DisplayName='Noise',Color=[1.0 0.0 0.5],LineWidth=2);hold on
+axis tight
+% xlabel('Time (ns)')
+% ylabel('Norm. Intensity (a.u.)')
+ylim([-1e-3, 1e-3])
+xticklabels([])
+yticklabels([])
+set(gca,'FontName','Aptos','FontSize',15)
+
+%%
+
+figure
+imagesc(squeeze(max(abs(hilbert(paper2wv)))))
+axis square off
+colormap hot
+%%
+ttime = (1:1024) * 1e9 / Fs;
+imagesc(reshape(ours,1024,200*200))
+colormap gray
+xticklabels([])
+yticklabels([])
+%% by paper
+
+% plot(A0,'DisplayName','Sym6-SURE');hold on
+ttime = (1:1024) * 1e9 / Fs;
+
+figure(Position=[651,689,560,214])
+plot(ttime,paper1emd,'DisplayName','EMD-MI',LineWidth=2);hold on
+%plot(ttime,paper1wv,'DisplayName','[1]',LineWidth=2);hold on
+% plot(ttime,paper2wv,'DisplayName','[2]',LineWidth=2);hold on
+plot(ttime,paper2mowv,'DisplayName','MODWT',LineWidth=2);hold off
+% plot(ttime,sigbpf,LineStyle='--',Color='r',DisplayName='Reference',LineWidth=1);hold off
+axis tight
+ylim([-2e-3, 2e-3])
+% xlabel('Time (ns)')
+% ylabel('Norm. Intensity (a.u.)')
+xticklabels([])
+yticklabels([])
+set(gca,'FontName','Aptos','FontSize',20)
+% legend(Orientation="horizontal",Location='southoutside')
+%% by svd
+
+[u,s,v] = svd(reshape(space3Dbpf,1024,200*200),'econ');
+v3d = reshape(v',1024,200,200);
+
+%%
+loglog(s,LineWidth=4)
+xline(4,LineStyle='--',LineWidth=1.2)
+xline(40,LineStyle='--',LineWidth=1.2)
+xticks([4, 40])
+%yticks([1e-20, 1e-10, 1])
+ylim([1e-3, 1])
+set(gca,'FontName','Aptos','FontSize',20)
+axis square
+grid on
+
+%%
+close all
+idx = 3;
+
+vim = squeeze(v3d(idx,:,:));
+
+figure;
+imagesc(vim')
+hold on
+
+% get the signal
+sg = u(:,idx);
+sg = resample(sg,200,1024);
+sg = normalize(sg,'range') * 200;
+plot(sg,Color='cyan',LineWidth=5)
+colormap hot
+axis image off
+
+sim = svd(vim,"econ","vector");
+sim = sim';
+%%
+figure
+% Shade the area below the curve
+x = 1:length(sim);          % X-axis values
+y = sim;                    % Y-axis values
+fill([x fliplr(x)], [y zeros(1,length(y))], ones(1,3)*0.5, 'FaceAlpha', 0.8, 'EdgeColor', 'none')
+hold on
+plot(sim,Color='r',LineWidth=5)
+hold off
+
+
+
+% Set axis properties
+xlim([1,200])
+xticklabels([])
+yticklabels([])
+ylim([0, 0.15])
+
+axis square
 %%
 figure('Position',[680,458,838,420])
 view3Dpa(space3Dbpf,0.4,10);
@@ -73,6 +293,9 @@ colormap hot
 zlim([100 150])
 xlim([1 Inf])
 
+%%
+[~,~,wv,weight]=svd_denoising_ius(space3Dbpf);
+semilogx(weight)
 %%
 cmode = squeeze(max(abs(hilbert(refbpf))));
 figure;imagesc((cmode));axis image off;colormap hot
@@ -150,7 +373,7 @@ sigma = gg.c1/sqrt(2);
 FWHM = 2*sqrt(2*log(2))*sigma;
 fprintf("FWHM: %.2f um \n ",FWHM)
 plot(gg);hold off
-axis tight
+axis tight\
 %% apply filter
 tic
 [res,wU,wV] = svd_denoising_ius(space3Dbpf,0);
@@ -284,13 +507,16 @@ function [a,b] = get_metrics(D,datused)
     
     taxis = (1:1024)*1e9/5e9;
 
-    figure
+    figure(Position=[438,602,765,214])
     alph = 0.3;
     plot_shade(taxis,squeeze(sg),'Signal',[0.0 0.5 0.0],alph);hold on
     plot_shade(taxis,squeeze(bg),'Noise',[1.0 0.0 0.5],alph);hold off
     axis tight
     set(gca,'FontName','Times','FontSize',25,'FontWeight','Bold')
-    ylim([-6 6])
+    % ylim([-6 6]) % e-4
+    ylim([-1 1]*10)
+    %xticklabels([])
+    yticklabels([])
 
 
     a = snr2d(sg,bg);

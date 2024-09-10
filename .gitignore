@@ -1,6 +1,9 @@
 *.asv
 complete_comparison_rounded*
 *.mat
+Simulation*
+exported_images*
+images*
 
 obsolete
 var_avg_data
