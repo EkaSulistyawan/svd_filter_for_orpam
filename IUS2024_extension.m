@@ -18,7 +18,7 @@ figure;imagesc((cmode));axis image off;colormap hot;
 
 
 %% calculate depth map
-envlp = abs(hilbert(space3Dbpf));
+envlp = abs(hilbert(ours));
 [maxval,Ibpf] = max(envlp,[],1);
 
 %%
@@ -71,7 +71,15 @@ sim = svd(vim,"econ","vector");
 sim = sim';
 
 %%
-[snrr0ori,cnrr0ori] = get_metrics(space3Dbpf,'FLAT');
+[snrr0ori,cnrr0ori] = get_metrics(space3Dbpf,'SPHERE');
+
+%%
+[ours,~,~,weight] = svd_denoising_ius(space3Dbpf,0);
+
+%%
+[snrr0ori,cnrr0ori] = get_metrics(ours,'SPHERE');
+cmode = squeeze(max(abs(hilbert(ours))));
+figure;imagesc((cmode));axis image off;colormap hot;
 %% calculate SNR 
 
 function [a,b] = get_metrics(D,datused)
