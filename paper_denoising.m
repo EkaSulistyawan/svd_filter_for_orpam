@@ -21,7 +21,7 @@ if (paperNum == "paper-1-emd-mi")
         
         partition = ceil(size(imfs,2)/2);
         tail = size(imfs,2);
-        % find the partition by MI
+        % find the partition by MIr
         cond = true;
         while cond
             mi_with_noisy_signal = mi(signal,imfs(:,partition));
@@ -39,7 +39,6 @@ if (paperNum == "paper-1-emd-mi")
                 cond = false;
             end
         end
-        
 
         if partition > 1
             high_f_grp = 1:partition;
@@ -83,7 +82,7 @@ elseif(paperNum == "paper-2-dwt")
 elseif(paperNum == "paper-2-modwt")
     disp("Run PAPER 2 MODWT")
     denoised = zeros(size(dat2d));
-    parfor i=1:size(dat2d,2)
+    for i=1:size(dat2d,2)
         signal = dat2d(:,i);
         [outp] = wden(signal,'modwtsqtwolog','s','mln',4,'sym4');
         denoised(:,i) = outp;

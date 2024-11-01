@@ -20,33 +20,24 @@
 % gamma controls over wU or wV
 % 
 
-function [rec3d,wU,wVnorm,wVraw] = svd_denoising_ius(D,gamma)
-
-% re-arrange
-imsize = size(D,2);
-dat2d = reshape(D,1024,imsize^2);
-[u,s,v] = svd(dat2d,"econ");
+function [wU,wV,ss] = getweight(u,v,s)
 
 % wU
 uu = normalize(u,1,"range")-0.5;
 uu = sum(uu.^2);
 wU = normalize(-uu,'range');
-wUraw = wU;
-wU = wU' .* diag(s);
+wU = wU' ;
 
 % wV
 v3d = reshape(v,imsize,imsize,1024);
 ss = pagesvd(v3d,'econ');
 vv = sum(squeeze(ss));
 wV = normalize(-vv,'range');
-wVraw = vv;
-wVnorm = wV;
-wV = wV' .* diag(s);
+wV = wV' ;
+ss = diag(s);
 
-
-%rec = u*diag(wU.*wV)*v';
-rec = u*diag(wV)*v';
-rec3d= reshape(rec,1024,imsize,imsize);
+% rec = u*diag((gamma*wU) + (1-gamma)*wV)*v';
+% rec3d= reshape(rec,1024,imsize,imsize);
 
 
 end
